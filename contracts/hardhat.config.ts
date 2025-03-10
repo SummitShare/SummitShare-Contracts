@@ -5,13 +5,13 @@ import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "@openzeppelin/hardhat-upgrades";
+import "@nomicfoundation/hardhat-verify";
 dotenv.config();
 
-// You should replace these values with your own node URL and private keys
+const SEPOLIA_RPC_URL = process.env.ETH_RPC_URL;
+const OP_RPC_URL = process.env.OP_RPC_URL;
 
-const SEPOLIA_RPC_URL = process.env.RPC_URL;
 const accounts = process.env.PRIVATE_KEYS?.split(',');
-
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -23,18 +23,29 @@ const config: HardhatUserConfig = {
       },
     },
   },
-  defender:{
-    apiKey: process.env.DEFENDER_KEY as string,
-    apiSecret: process.env.DEFENDER_SECRET as string,
-  },
   networks: {
     sepolia: {
       url: SEPOLIA_RPC_URL,
       accounts,
-      chainId: 11155420, // Sepolia chain ID
-      gasPrice: 4000000000,
+      chainId: 11155111, // ETH Sepolia chain ID
+      gasPrice: "auto",
+    },
+
+    optimismSepolia: {
+      url: OP_RPC_URL,
+      accounts,
+      chainId: 10, // OP SEPOLIA chain ID
+      gasPrice: "auto",
+    }
+  },
+
+  etherscan: {
+    apiKey: {
+      optimisticEthereum: process.env.OPTIMISM_API_KEY || "",
+      mainnetEthereum: process.env.ETHEREUM_API_KEY || "",
     },
   },
+
 
   gasReporter: {
     currency: "USD",

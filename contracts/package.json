@@ -1,19 +1,22 @@
 {
   "name": "@rev-share/contracts",
   "version": "0.0.1",
-  "description": "SummitShare Platfrom Smart Contracts(RVS-m)",
+  "description": "",
   "scripts": {
-    "i": "yarn install",
+    "postinstall": "chmod +x sync-abis.js",
     "test": "REPORT_GAS=true hardhat test",
     "test:coverage": "hardhat coverage --solcoverjs ./.solcover.js --temp build/contracts --testfiles \"./test/*.ts\"",
-    "build": "hardhat compile",
+    "build": "hardhat compile && node sync-abis.js",
     "deploy:dev": "hardhat run --network sepolia scripts/deploy.ts",
-    "configure:dev": "hardhat run --network sepolia scripts/configure.ts",
-    "mock:dev": "hardhat run --network sepolia scripts/mock.ts"
+    "configure:dev": "hardhat run --network optimism scripts/configure.ts",
+    "deploy:prod": "hardhat run --network optimism scripts/deploy.ts",
+    "configure:prod": "hardhat run --network optimism scripts/configure.ts",
+    "mock:dev": "hardhat run --network scripts/mock.ts",
+    "sync:abis": "node sync-abis.js"
   },
-  "keywords": ["solidity", "SummitShare", "Ethereum", "erc721a"],
-  "author": "https://github.com/SummitShare",
-  "license": "MIT",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.11",
@@ -37,7 +40,5 @@
   "dependencies": {
     "@nomicfoundation/hardhat-verify": "^2.0.8",
     "@openzeppelin/contracts": "^5.0.0"
-  },
-  "repository": "https://github.com/SummitShare/SummitShare-Contracts",
-  "private": false
+  }
 }

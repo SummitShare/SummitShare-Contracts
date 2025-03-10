@@ -7,7 +7,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract EventEscrow {
-    IERC20 public usdcToken;
+    IERC20 public usdtToken;
     mapping(address => uint256) public payouts;
     address[] public beneficiaries;
     uint256 public totalShares;
@@ -19,14 +19,14 @@ contract EventEscrow {
 
     event PaymentDistributed(address beneficiary, uint256 amount, address indexedcaller);
     event EventEscrowDeployed(
-        address usdcToken,
+        address usdtToken,
         address[] beneficiaries,
         uint256[] shares,
         uint256 numBeneficiaries
     );
 
     constructor(
-        IERC20 _usdcToken,
+        IERC20 _usdtToken,
         address[] memory _beneficiaries,
         uint256[] memory _shares
     ) {
@@ -34,7 +34,7 @@ contract EventEscrow {
             _beneficiaries.length == _shares.length,
             "Mismatched beneficiaries and shares."
         );
-        usdcToken = _usdcToken;
+        usdtToken = _usdtToken;
         beneficiaries = _beneficiaries;
 
         for (uint i = 0; i < _beneficiaries.length; i++) {
@@ -42,7 +42,7 @@ contract EventEscrow {
             totalShares += _shares[i];
         }
         emit EventEscrowDeployed(
-            address(_usdcToken),
+            address(_usdtToken),
             _beneficiaries,
             _shares,
             _beneficiaries.length
@@ -50,14 +50,14 @@ contract EventEscrow {
     }
 
     function distributePayments() external onlyBeneficiary {
-        uint256 totalAmount = usdcToken.balanceOf(address(this));
+        uint256 totalAmount = usdtToken.balanceOf(address(this));
         require(totalAmount > 0, "No funds to distribute.");
 
         for (uint i = 0; i < beneficiaries.length; i++) {
             address beneficiary = beneficiaries[i];
             uint256 payment = (totalAmount * payouts[beneficiary]) /
                 totalShares;
-            usdcToken.transfer(beneficiary, payment);
+            usdtToken.transfer(beneficiary, payment);
             emit PaymentDistributed(beneficiary, payment, msg.sender);
         }
     }

@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./ExhibitNFT.sol";
 
 contract Museum is Ownable {
-    IERC20 public usdcToken;
+    IERC20 public usdtToken;
     mapping(string => ExhibitNFT) public exhibits;
 
     event ExhibitCurated(
@@ -24,12 +24,12 @@ contract Museum is Ownable {
         address ownerAddress
     );
 
-    constructor(IERC20 _usdcToken) Ownable(msg.sender) {
-        usdcToken = _usdcToken;
+    constructor(IERC20 _usdtToken) Ownable(msg.sender) {
+        usdtToken = _usdtToken;
         // emmit an event with the contract address, token address, and owner address
-        emit MuseumCreated(address(this), address(usdcToken), owner());
+        emit MuseumCreated(address(this), address(usdtToken), owner());
     }
-
+ 
     /**
      * @dev Curates a new exhibit.
      * @param exhibitId The unique identifier for the exhibit.
@@ -47,20 +47,20 @@ contract Museum is Ownable {
     /**
      * @dev Purchases a ticket for an exhibit.
      * @param exhibitId The unique identifier for the exhibit.
-     * @param usdcAmount The amount of USDC sent to purchase the ticket.
+     * @param usdtAmount The amount of USDT sent to purchase the ticket.
      */
     function purchaseTicket(
         string memory exhibitId,
-        uint256 usdcAmount
+        uint256 usdtAmount
     ) external {
         ExhibitNFT exhibit = exhibits[exhibitId];
         require(address(exhibit) != address(0), "Exhibit does not exist.");
 
         uint256 ticketPrice = exhibit.ticketPrice();
 
-        // Transfer the USDC directly from the buyer to the ExhibitNFT's escrow
+        // Transfer the USDT directly from the buyer to the ExhibitNFT's escrow
         address escrowAddress = address(exhibit.escrow());
-        require(usdcToken.transferFrom(msg.sender, escrowAddress, ticketPrice), "Transfer Failed");
+        require(usdtToken.transferFrom(msg.sender, escrowAddress, ticketPrice), "Transfer Failed");
         
         // Mint the ticket to the buyer
         uint256 tokenId = exhibit.mintTicket(msg.sender);

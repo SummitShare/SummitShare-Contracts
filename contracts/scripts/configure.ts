@@ -3,56 +3,42 @@ import { ethers } from "hardhat";
 async function main() {
 
     // Get the signers
-    const [controller, owner, beneficiary1, beneficiary2, funder] = await ethers.getSigners();
+    const [owner] = await ethers.getSigners();
     // Hardcoded addresses
-    const usdcTokenAddress = "0xF4Fa9d3d03A946Ae032Ca5f94CFe11e4B33340d7";
-    const museumAddress = "0x45804953C8C7e8C261cB1269039C8CE6700D56C7";
-    const organizerServiceAddress = "0x844188D0E7CAfCf4183714f48150223a11AdE341";
-    const artifactNFT1 = "0x5A9c008A6fFd63ca591369DF8c5DB987f359d7c8";
-    const artifactNFT2 = "0x4bCd14f57B4591E99A3689fC669932F40FD64aD5";
+    const museumAddress = "0x3935e5BED378aCeD49655b3E1fA8c0e68550fbaa";
+    const organizerServiceAddress = "0x662388C92915aD4be269452E7069d4AC56b07e82";
+    const artifactNFT1 = "0xE3f9Cb6608fEFb78FDB2FD5496d62dc547236AAa";
+
+    const beneficiary1 : string =  "0xc0243933ba0a7b3fffbb960c58011be37ab3a3fd" ;
+    const beneficiary2 : string = "0x3B6b0Ba44Ef20324c99F5A152C2fF19a13369498";
 
   
     const exhibit1 ={
-        name: "",
-        symbol: "",
-        ticketPrice: ethers.parseUnits("0", 6),
-        beneficiaries: [beneficiary1.address, beneficiary2.address],
-        shares: [50, 50],
-        baseURI: "",
-        location: "",
-        artifactNFT: "",
-        details: "",
-        id: ""
-    }
-    const exhibit2 ={
-        name: "",
-        symbol: "",
-        ticketPrice: ethers.parseUnits("0", 6),
-        beneficiaries: [beneficiary1.address, beneficiary2.address],
-        shares: [50, 50],
-        baseURI: "",
-        location: "",
-        artifactNFT: "",
-        details: "",
-        id: ""
+        name: "The Leading Ladies of Zambia",
+        symbol: "LLEZ",
+        ticketPrice: ethers.parseUnits("5", 6),
+        beneficiaries: [beneficiary1, beneficiary2],
+        shares: [80, 20],
+        baseURI: "https://s3.tebi.io/summitshare-tickets/",
+        location: "Virtual Space",
+        artifactNFT: artifactNFT1,
+        details: "Join us as we reclaim and create new history.",
+        id: "LLE1"
     }
 
     // Connect to the contracts
     const OrganizerService = await ethers.getContractFactory("EventOrganizerService");
     const Museum = await ethers.getContractFactory("Museum");
-    const UsdcToken = await ethers.getContractFactory("MUSDC");
     const ArtifactNFT = await ethers.getContractFactory("ArtifactNFT");
     
     const organizerService = OrganizerService.attach(organizerServiceAddress).connect(owner);
     const museum = Museum.attach(museumAddress).connect(owner);
-    const usdcToken = UsdcToken.attach(usdcTokenAddress).connect(owner);
     const artifactNFT = ArtifactNFT.attach(artifactNFT1).connect(owner);
-    const artifactNFTD = ArtifactNFT.attach(artifactNFT2).connect(owner)
     
     // Organize an exhibit
     const tx1 = await organizerService.connect(owner).organizeExhibit( 
-            exhibit1.name,
-            exhibit1.symbol,
+            exhibit1.name, // name
+            exhibit1.symbol, // exhibit symbol
             exhibit1.ticketPrice, // ticket price
             exhibit1.beneficiaries, // beneficiaries
             exhibit1.shares, // shares
@@ -64,76 +50,26 @@ async function main() {
         );
     const receipt1 = await tx1.wait(6);
     console.log("Organized Exhibit 1", receipt1.status)
-    const tx2 = await organizerService.connect(owner).organizeExhibit(
-            exhibit2.name,
-            exhibit2.symbol,
-            exhibit2.ticketPrice, // ticket price
-            exhibit2.beneficiaries, // beneficiaries
-            exhibit2.shares, // shares
-            exhibit2.baseURI, // base URI
-            exhibit2.location, // location
-            exhibit2.artifactNFT, // ArtifactNFT address
-            exhibit2.details, // details
-            exhibit2.id //exhibit id
-        );
-    const receipt2 = await tx2.wait(6);
-    console.log("Organized Exhibit 2", receipt2.status)
- 
+
  
     // Read the contract state
-    const exhibitNFTAddress = await organizerService.exhibits("eventID");
-    const exhibit2NFTAddress = await organizerService.exhibits("eventID2");
+    const exhibitNFTAddress = await organizerService.exhibits(exhibit1.id);
     console.log("ExhibitNFT 1 deployed to:", exhibitNFTAddress)
-    console.log("ExhibitNFT 2 deployed to:", exhibit2NFTAddress)
 
-    const tx3 =  await museum.curateExhibit("eventID", exhibitNFTAddress);
+    const tx3 =  await museum.curateExhibit(exhibit1.id, exhibitNFTAddress);
     const receipt3 = await tx3.wait(6);
     console.log("Curated Exhibit 1", receipt3.status)
 
-    const tx6 =  await museum.curateExhibit("eventID2", exhibitNFTAddress);
-    const receipt6 = await tx6.wait(6);
-    console.log("Curated Exhibit 2", receipt6.status)
-
     // get usdcToken set on museum exhibits
-    const exhibitMuseumAddress = await museum.exhibits("eventID");
-    const exhibit2MuseumAddress = await museum.exhibits("eventID2");
+    const exhibitMuseumAddress = await museum.exhibits(exhibit1.id);
 
     console.log("ExhibitNFT 1 deployed to:", exhibitNFTAddress)
     console.log("Exhibit1 Museum deployed to:", exhibitMuseumAddress)
-    console.log("ExhibitNFT 2 deployed to:", exhibit2NFTAddress)
-    console.log("Exhibit 2 Museum deployed to:", exhibit2MuseumAddress)
 
     //mint artifactNFTs - exhibit 1
-    const tx4 = await artifactNFT.mint(owner.address, 4);
+    const tx4 = await artifactNFT.mint(owner.address, 6);
     const receipt4 = await tx4.wait(6);
     console.log("Minted ArtifactNFT 1", receipt4.status)
-
-    //mint artifactNFTs - exhibit 2
-    const tx5 = await artifactNFTD.mint(owner.address, 4);
-    const receipt5 = await tx4.wait(6);
-    console.log("Minted ArtifactNFT 1", receipt5.status)
-    
-  
-  // // Purchase a few tickets
-  // await usdcToken.connect(funder).approve(museum.target, ethers.parseUnits("30", 18),); // Approve 3 USDC
-  // await museum.connect(funder).purchaseTicket("exhibit1", ethers.parseUnits("10", 18)); // Purchase 1 ticket
-  // await museum.connect(funder).purchaseTicket("exhibit1", ethers.parseUnits("10", 18)); // Purchase 1 ticket
-  // await museum.connect(funder).purchaseTicket("exhibit1", ethers.parseUnits("10", 18)); // Purchase 1 ticket
-    
-    
-    
-    
-    // try {
-
-    //     let tx2 = await museum.connect(funder).purchaseTicket("exhibit1", ethers.parseUnits("20", 18)); // Purchase 1 ticket
-    //     console.log("purchase ticket 1", tx2)
-    // } catch (e) {
-    //     console.log(e)
-    // }
-    // let tx3= await museum.connect(funder).purchaseTicket("exhibit1", ethers.parseUnits("10", 18)); // Purchase 1 ticket
-    // await tx3.wait();
-    // let tx4 = await museum.connect(funder).purchaseTicket("exhibit1", ethers.parseUnits("10", 18)); // Purchase 1 ticket
-    // await tx4.wait();
 }
 
 main()
