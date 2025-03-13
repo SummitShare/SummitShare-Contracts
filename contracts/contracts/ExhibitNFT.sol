@@ -5,12 +5,12 @@ pragma solidity ^0.8.0;
    Purpose: Manages Non-Fungible Tokens (NFTs) representing individual exhibits, ensuring ownership and access rights for event participants. */
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "./EventEscrow.sol";
+import "./PaymentHandler.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ExhibitNFT is ERC721, Ownable {
     uint256 public ticketPrice;
-    EventEscrow public escrow;
+    PaymentHandler public paymentHandler;
     uint256 private totalMinted;
     string public baseURI;
 
@@ -24,7 +24,7 @@ contract ExhibitNFT is ERC721, Ownable {
         string name,
         string symbol,
         uint256 ticketPrice,
-        EventEscrow escrow,
+        PaymentHandler paymentHandler,
         address owner,
         string baseURI,
         string location,
@@ -36,7 +36,7 @@ contract ExhibitNFT is ERC721, Ownable {
         string memory name,
         string memory symbol,
         uint256 _ticketPrice,
-        EventEscrow _escrow,
+        address _paymentHandler,
         address _owner,
         string memory _baseURI,
         string memory _location,
@@ -44,7 +44,7 @@ contract ExhibitNFT is ERC721, Ownable {
         string memory _details
     ) ERC721(name, symbol) Ownable(_owner) {
         ticketPrice = _ticketPrice;
-        escrow = _escrow;
+        paymentHandler = PaymentHandler(_paymentHandler);
         baseURI = _baseURI;
         totalMinted = 0;
 
@@ -56,8 +56,8 @@ contract ExhibitNFT is ERC721, Ownable {
         emit ExhibitCreated(
             name,
             symbol,
-            _ticketPrice,
-            _escrow,
+            _ticketPrice, 
+            paymentHandler,
             _owner,
             _baseURI,
             _location,
