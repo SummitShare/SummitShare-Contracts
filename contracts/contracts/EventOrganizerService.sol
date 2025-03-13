@@ -11,6 +11,21 @@ contract EventOrganizerService is Ownable {
     Museum public museum;
     mapping(string => address) public exhibits;
 
+    struct ExhibitInfo {
+        string name;
+        string symbol;
+        uint256 ticketPrice;
+        string baseURI;
+        string location;
+        address artifactNFTAddress;
+        string details;
+    }
+
+    struct RevenueConfig {
+        address[] beneficiaries;
+        uint256[] shares;
+    }
+
     event ExhibitNFTDeployed(
         string exhibitId,
         address indexed exhibitNFTAddress,
@@ -47,7 +62,7 @@ contract EventOrganizerService is Ownable {
         string memory baseURI
     ) public {
         ArtifactNFT newArtifact = new ArtifactNFT(name, symbol, owner, baseURI);
-               emit ArtifactNFTDeployed(
+        emit ArtifactNFTDeployed(
             address(newArtifact),
             name,
             symbol,
@@ -60,45 +75,31 @@ contract EventOrganizerService is Ownable {
      * @dev Organize a new exhibit by deploying PaymentHandler and ExhibitNFT contracts.
      * Automatically configures the PaymentHandler with the ExhibitNFT address for ticketing.
      * @param exhibitId Unique exhibit identifier.
-     * @param name Name of the exhibit.
-     * @param symbol NFT symbol for ticketing.
-     * @param ticketPrice Predefined ticket price.
-     * @param beneficiaries Array of beneficiary addresses.
-     * @param shares Array of corresponding shares.
-     * @param baseURI Base URI for NFT metadata.
-     * @param location Exhibit location.
-     * @param artifactNFTAddress Associated ArtifactNFT address.
-     * @param details Additional exhibit details.
+     * @param info Struct containing exhibit details.
+     * @param revenue Struct containing revenue sharing configuration.
      */
     function organizeExhibit(
         string memory exhibitId,
-        string memory name,
-        string memory symbol,
-        uint256 ticketPrice,
-        address[] memory beneficiaries,
-        uint256[] memory shares,
-        string calldata baseURI,
-        string calldata location,
-        address artifactNFTAddress,
-        string calldata details
+        ExhibitInfo calldata info,
+        RevenueConfig calldata revenue
     ) public onlyOwner {
         // Ensure the exhibitId is unique via the museum registry.
         require(address(museum.exhibits(exhibitId)) == address(0), "ExhibitID already taken");
 
         // Deploy PaymentHandler for this exhibit.
-        PaymentHandler paymentHandler = new PaymentHandler(beneficiaries, shares);
+        PaymentHandler paymentHandler = new PaymentHandler(revenue.beneficiaries, revenue.shares);
 
         // Deploy ExhibitNFT for on-chain ticketing.
         ExhibitNFT exhibitNFT = new ExhibitNFT(
-            name,
-            symbol,
-            ticketPrice,
+            info.name,
+            info.symbol,
+            info.ticketPrice,
             address(paymentHandler),
             owner(),
-            baseURI,
-            location,
-            artifactNFTAddress,
-            details
+            info.baseURI,
+            info.location,
+            info.artifactNFTAddress,
+            info.details
         );
 
         // Automatically configure PaymentHandler to use ExhibitNFT as the ticketing contract.
