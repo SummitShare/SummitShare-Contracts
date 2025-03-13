@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ExhibitNFT is ERC721, Ownable {
     uint256 public ticketPrice;
-    PaymentHandler public paymentHandler;
+    address public paymentHandler;
     uint256 private totalMinted;
     string public baseURI;
 
@@ -19,12 +19,13 @@ contract ExhibitNFT is ERC721, Ownable {
     string public details;
 
     event TicketMinted(address exhibit, address to, uint256 tokenId);
+
     // Define the event
     event ExhibitCreated(
         string name,
         string symbol,
         uint256 ticketPrice,
-        PaymentHandler paymentHandler,
+        address paymentHandler,
         address owner,
         string baseURI,
         string location,
@@ -44,7 +45,7 @@ contract ExhibitNFT is ERC721, Ownable {
         string memory _details
     ) ERC721(name, symbol) Ownable(_owner) {
         ticketPrice = _ticketPrice;
-        paymentHandler = PaymentHandler(_paymentHandler);
+        paymentHandler = _paymentHandler;
         baseURI = _baseURI;
         totalMinted = 0;
 
@@ -66,9 +67,11 @@ contract ExhibitNFT is ERC721, Ownable {
         );
     }
 
-    function mintTicket(address to) external onlyOwner returns (uint256) {
-        uint256 tokenId = totalMinted++;
+    function mintTicket(address to) external returns (uint256) {
+        require(msg.sender == paymentHandler || msg.sender == owner(), "Not authorized to mint ticket");
+        uint256 tokenId = totalMinted;
         _mint(to, tokenId);
+        totalMinted++;
         emit TicketMinted(address(this), to, tokenId);
         return tokenId;
     }
