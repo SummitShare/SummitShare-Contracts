@@ -2,15 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 interface ITicketing {
     function mintTicket(address to) external;
 }
 
 contract PaymentHandler {
-    using SafeERC20 for IERC20;
-    
     uint256 public totalShares;
     bool public onChainTicketingEnabled;
     address public ticketingContract;
@@ -63,6 +60,7 @@ contract PaymentHandler {
      * @param _ticketingContract Address of the ticketing contract (ExhibitNFT).
      */
     function setTicketingEnabled(bool _enabled, address _ticketingContract) external onlyBeneficiary {
+        require(_ticketingContract != address(0) || !_enabled, "Invalid ticketing contract");
         onChainTicketingEnabled = _enabled;
         ticketingContract = _ticketingContract;
     }
@@ -79,7 +77,8 @@ contract PaymentHandler {
             uint256 payment = (amount * shares[beneficiary]) / totalShares;
             
             if (payment > 0) { // Skip zero payments to save gas
-                token.transfer(beneficiary, payment);
+                bool success = token.transfer(beneficiary, payment);
+                require(success, "Token transfer failed");
                 emit PaymentDistributed(beneficiary, payment, address(token), paymentType);
             }
         }
@@ -95,25 +94,24 @@ contract PaymentHandler {
         require(amount > 0, "Amount must be > 0");
         
         // Transfer tokens first
-        token.transferFrom(msg.sender, address(this), amount);
+        bool success = token.transferFrom(msg.sender, address(this), amount);
+        require(success, "Token transfer failed");
         
         // Split tokens to beneficiaries
         _splitTokens(token, amount, paymentType);
         
-        // Mint ticket if applicable (combine conditions)
+        // Mint ticket if applicable
         if (paymentType == 1 && onChainTicketingEnabled && ticketingContract != address(0)) {
-            ITicketing(ticketingContract).mintTicket(msg.sender);
-            emit TicketMinted(msg.sender);
+            try ITicketing(ticketingContract).mintTicket(msg.sender) {
+                emit TicketMinted(msg.sender);
+            } catch Error(string memory reason) {
+                revert(string(abi.encodePacked("Ticket minting failed: ", reason)));
+            } catch {
+                revert("Ticket minting failed");
+            }
         }
         
         emit PaymentProcessed(msg.sender, amount, address(token), paymentType);
     }
-    // // Prevent accidental ETH transfers
-    // fallback() external payable {
-    //     revert("Only accepts ERC20 tokens");
-    // }
 
-    // receive() external payable {
-    //     revert("Only accepts ERC20 tokens");
-    // }
 }

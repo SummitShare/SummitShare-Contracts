@@ -39,6 +39,8 @@ contract ExhibitNFT is ERC721, Ownable {
         address _artifactNFTAddress,
         string memory _details
     ) ERC721(name, symbol) Ownable(_owner) {
+        require(_paymentHandler != address(0), "Payment handler cannot be zero address");
+        
         ticketPrice = _ticketPrice;
         paymentHandler = _paymentHandler;
         baseURI = _baseURI;
@@ -54,7 +56,6 @@ contract ExhibitNFT is ERC721, Ownable {
             _ticketPrice, 
             _paymentHandler,
             _owner,
- 
             _artifactNFTAddress
         );
     }
@@ -65,10 +66,13 @@ contract ExhibitNFT is ERC721, Ownable {
      * @return tokenId The ID of the minted token.
      */
     function mintTicket(address to) external returns (uint256) {
-        require(msg.sender == paymentHandler || msg.sender == owner(), "Not authorized");
+        if (msg.sender != paymentHandler && msg.sender != owner()) {
+            revert("Not authorized");
+        }
         
-        uint256 tokenId = totalMinted++;
+        uint256 tokenId = totalMinted;
         _mint(to, tokenId);
+        totalMinted++;
         
         emit TicketMinted(address(this), to, tokenId);
         return tokenId;
