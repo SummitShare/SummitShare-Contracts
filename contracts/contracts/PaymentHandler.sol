@@ -9,15 +9,13 @@ interface ITicketing {
 }
 
 contract PaymentHandler {
-
     using SafeERC20 for IERC20;
+    
+    uint256 public totalShares;
+    bool public onChainTicketingEnabled;
+    address public ticketingContract;
     address[] public beneficiaries;
     mapping(address => uint256) public shares;
-    uint256 public totalShares;
-
-    // optional  on-chain ticketing configuration.
-    bool public onChainTicketingEnabled;
-    address public ticketingContract; 
 
     // Payment types: 1 = Ticket Sale, 2 = Donation.
     event PaymentProcessed(
@@ -47,12 +45,15 @@ contract PaymentHandler {
     constructor(address[] memory _beneficiaries, uint256[] memory _shares) {
         require(_beneficiaries.length == _shares.length, "Length mismatch");
         require(_beneficiaries.length > 0, "No beneficiaries provided");
-       // owner = msg.sender;
+        
+        totalShares = 0; // Explicitly initialize
+        
         for (uint256 i = 0; i < _beneficiaries.length; i++) {
             beneficiaries.push(_beneficiaries[i]);
             shares[_beneficiaries[i]] = _shares[i];
             totalShares += _shares[i];
         }
+        
         emit PaymentHandlerDeployed(_beneficiaries, _shares, totalShares);
     }
 
@@ -66,34 +67,53 @@ contract PaymentHandler {
         ticketingContract = _ticketingContract;
     }
 
-        function _splitTokens(IERC20 token, uint256 amount, uint256 paymentType) internal {
+    /**
+     * @dev Split tokens among beneficiaries according to their shares.
+     * @param token The ERC20 token to distribute.
+     * @param amount The total amount to distribute.
+     * @param paymentType The type of payment (1 = Ticket, 2 = Donation).
+     */
+    function _splitTokens(IERC20 token, uint256 amount, uint256 paymentType) internal {
         for (uint256 i = 0; i < beneficiaries.length; i++) {
             address beneficiary = beneficiaries[i];
             uint256 payment = (amount * shares[beneficiary]) / totalShares;
-            token.safeTransfer(beneficiary, payment);
-            emit PaymentDistributed(beneficiary, payment, address(token), paymentType);
+            
+            if (payment > 0) { // Skip zero payments to save gas
+                token.transfer(beneficiary, payment);
+                emit PaymentDistributed(beneficiary, payment, address(token), paymentType);
+            }
         }
     }
 
+    /**
+     * @dev Process a payment, split funds, and mint ticket if applicable.
+     * @param token The ERC20 token used for payment.
+     * @param amount The amount being paid.
+     * @param paymentType The type of payment (1 = Ticket, 2 = Donation).
+     */
     function processPayment(IERC20 token, uint256 amount, uint256 paymentType) external {
         require(amount > 0, "Amount must be > 0");
-        token.safeTransferFrom(msg.sender, address(this), amount);
+        
+        // Transfer tokens first
+        token.transferFrom(msg.sender, address(this), amount);
+        
+        // Split tokens to beneficiaries
         _splitTokens(token, amount, paymentType);
-
-        // For ticket sales, if enabled, mint a ticket.
+        
+        // Mint ticket if applicable (combine conditions)
         if (paymentType == 1 && onChainTicketingEnabled && ticketingContract != address(0)) {
             ITicketing(ticketingContract).mintTicket(msg.sender);
             emit TicketMinted(msg.sender);
         }
+        
         emit PaymentProcessed(msg.sender, amount, address(token), paymentType);
     }
+    // // Prevent accidental ETH transfers
+    // fallback() external payable {
+    //     revert("Only accepts ERC20 tokens");
+    // }
+
+    // receive() external payable {
+    //     revert("Only accepts ERC20 tokens");
+    // }
 }
-
-//     fallback() external payable {
-//         revert("This contract only accepts ERC20 tokens");
-//     }
-
-//     receive() external payable {
-//         revert("This contract only accepts ERC20 tokens");
-//     }
-// }

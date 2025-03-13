@@ -13,24 +13,19 @@ contract ExhibitNFT is ERC721, Ownable {
     address public paymentHandler;
     uint256 private totalMinted;
     string public baseURI;
-
     string public location;
     address public artifactNFTAddress;
     string public details;
 
     event TicketMinted(address exhibit, address to, uint256 tokenId);
 
-    // Define the event
     event ExhibitCreated(
         string name,
         string symbol,
         uint256 ticketPrice,
         address paymentHandler,
         address owner,
-        string baseURI,
-        string location,
-        address artifactNFTAddress,
-        string details
+        address artifactNFTAddress
     );
 
     constructor(
@@ -48,38 +43,49 @@ contract ExhibitNFT is ERC721, Ownable {
         paymentHandler = _paymentHandler;
         baseURI = _baseURI;
         totalMinted = 0;
-
         location = _location;
         artifactNFTAddress = _artifactNFTAddress;
         details = _details;
 
-        // Emit the event
+        // Emit the event 
         emit ExhibitCreated(
             name,
             symbol,
             _ticketPrice, 
-            paymentHandler,
+            _paymentHandler,
             _owner,
-            _baseURI,
-            _location,
-            _artifactNFTAddress,
-            _details
+ 
+            _artifactNFTAddress
         );
     }
 
+    /**
+     * @dev Mint a new ticket NFT.
+     * @param to Address to mint the ticket to.
+     * @return tokenId The ID of the minted token.
+     */
     function mintTicket(address to) external returns (uint256) {
-        require(msg.sender == paymentHandler || msg.sender == owner(), "Not authorized to mint ticket");
-        uint256 tokenId = totalMinted;
+        require(msg.sender == paymentHandler || msg.sender == owner(), "Not authorized");
+        
+        uint256 tokenId = totalMinted++;
         _mint(to, tokenId);
-        totalMinted++;
+        
         emit TicketMinted(address(this), to, tokenId);
         return tokenId;
     }
 
+    /**
+     * @dev Returns the base URI for token metadata.
+     * @return The base URI string.
+     */
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
     }
 
+    /**
+     * @dev Set a new base URI for token metadata.
+     * @param newBaseURI The new base URI to set.
+     */
     function setBaseURI(string memory newBaseURI) external onlyOwner {
         baseURI = newBaseURI;
     }
