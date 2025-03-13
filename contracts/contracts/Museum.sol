@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./ExhibitNFT.sol";
 
 contract Museum is Ownable {
-    IERC20 public usdtToken;
     mapping(string => ExhibitNFT) public exhibits;
 
     event ExhibitCurated(
@@ -16,7 +15,7 @@ contract Museum is Ownable {
         string exhibitId,
         address exhibitAddress
     );
-    event TicketPurchased(address buyer, address exhibit, uint256 tokenId);
+    
     // emmit an event with the contract address, token address, and owner address
     event MuseumCreated(
         address museumAddress,
@@ -24,10 +23,9 @@ contract Museum is Ownable {
         address ownerAddress
     );
 
-    constructor(IERC20 _usdtToken) Ownable(msg.sender) {
-        usdtToken = _usdtToken;
+    constructor() Ownable(msg.sender) {
         // emmit an event with the contract address, token address, and owner address
-        emit MuseumCreated(address(this), address(usdtToken), owner());
+        emit MuseumCreated(address(this), owner());
     }
  
     /**
@@ -44,29 +42,29 @@ contract Museum is Ownable {
         emit ExhibitCurated(address(this), exhibitId, address(exhibit));
     }
 
-    /**
-     * @dev Purchases a ticket for an exhibit.
-     * @param exhibitId The unique identifier for the exhibit.
-     * @param usdtAmount The amount of USDT sent to purchase the ticket.
-     */
-    function purchaseTicket(
-        string memory exhibitId,
-        uint256 usdtAmount
-    ) external {
-        ExhibitNFT exhibit = exhibits[exhibitId];
-        require(address(exhibit) != address(0), "Exhibit does not exist.");
+    // /**
+    //  * @dev Purchases a ticket for an exhibit.
+    //  * @param exhibitId The unique identifier for the exhibit.
+    //  * @param usdtAmount The amount of USDT sent to purchase the ticket.
+    //  */
+    // function purchaseTicket(
+    //     string memory exhibitId,
+    //     uint256 usdtAmount
+    // ) external {
+    //     ExhibitNFT exhibit = exhibits[exhibitId];
+    //     require(address(exhibit) != address(0), "Exhibit does not exist.");
 
-        uint256 ticketPrice = exhibit.ticketPrice();
+    //     uint256 ticketPrice = exhibit.ticketPrice();
 
-        // Transfer the USDT directly from the buyer to the ExhibitNFT's escrow
-        address escrowAddress = address(exhibit.escrow());
-        require(usdtToken.transferFrom(msg.sender, escrowAddress, ticketPrice), "Transfer Failed");
+    //     // Transfer the USDT directly from the buyer to the ExhibitNFT's escrow
+    //     address escrowAddress = address(exhibit.escrow());
+    //     require(usdtToken.transferFrom(msg.sender, escrowAddress, ticketPrice), "Transfer Failed");
         
-        // Mint the ticket to the buyer
-        uint256 tokenId = exhibit.mintTicket(msg.sender);
+    //     // Mint the ticket to the buyer
+    //     uint256 tokenId = exhibit.mintTicket(msg.sender);
 
-        emit TicketPurchased(msg.sender, address(exhibit), tokenId);
-    }
+    //     emit TicketPurchased(msg.sender, address(exhibit), tokenId);
+    // }
 
     function verifyTicketOwnership(
         string memory exhibitId,
