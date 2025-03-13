@@ -1,22 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-/* Category: Smart Contract
-   Purpose: Manages the organization and deployment of exhibits for events, integrating with the Museum contract and handling ArtifactNFTs. */
-   
-import "./Museum.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./Museum.sol";
 import "./ArtifactNFT.sol";
+import "./ExhibitNFT.sol";
+import "./PaymentHandler.sol";
 
 contract EventOrganizerService is Ownable {
     Museum public museum;
-    IERC20 public usdtToken;
     mapping(string => address) public exhibits;
 
     event ExhibitNFTDeployed(
         string exhibitId,
         address indexed exhibitNFTAddress,
-        address indexed escrowAddress,
+        address indexed paymentHandlerAddress,
         address indexed museumAddress
     );
     event ArtifactNFTDeployed(
@@ -27,17 +25,20 @@ contract EventOrganizerService is Ownable {
         string baseURI
     );
 
-    constructor(Museum _museum, IERC20 _usdtToken) Ownable(msg.sender) {
+    /**
+     * @dev Constructor sets the Museum contract.
+     * @param _museum Address of the deployed Museum contract.
+     */
+    constructor(Museum _museum) Ownable(msg.sender) {
         museum = _museum;
-        usdtToken = _usdtToken;
     }
 
     /**
-     * @dev Deploys a new ArtifactNFT.
-     * @param name The name of the artifact.
-     * @param symbol The symbol of the artifact.
-     * @param owner The owner of the artifact.
-     * @param baseURI The base URI for the artifact's NFT metadata.
+     * @dev Deploy a new ArtifactNFT contract.
+     * @param name Name of the artifact.
+     * @param symbol Symbol of the artifact.
+     * @param owner Owner address.
+     * @param baseURI Base URI for metadata.
      */
     function deployArtifactNFT(
         string memory name,
@@ -45,10 +46,8 @@ contract EventOrganizerService is Ownable {
         address owner,
         string memory baseURI
     ) public {
-        // Create a new ArtifactNFT contract for the artifact
         ArtifactNFT newArtifact = new ArtifactNFT(name, symbol, owner, baseURI);
-        // Emit an event to signal that the new ArtifactNFT contract has been deployed
-        emit ArtifactNFTDeployed(
+               emit ArtifactNFTDeployed(
             address(newArtifact),
             name,
             symbol,
@@ -58,60 +57,63 @@ contract EventOrganizerService is Ownable {
     }
 
     /**
-     * @dev Organizes a new exhibit.
-     * @param exhibitId The unique identifier for the exhibit.
-     * @param name The name of the exhibit.
-     * @param symbol The symbol of the exhibit.
-     * @param ticketPrice The price of the ticket for the exhibit.
-     * @param beneficiaries The addresses of the beneficiaries who will receive revenue from the exhibit.
-     * @param shares The shares of the revenue that each beneficiary will receive.
-     * @param baseURI The base URI for the exhibit's NFT metadata.
-     * @param location The location of the exhibit.
-     * @param artifactNFTAddress The address of the ArtifactNFT contract.
-     * @param details The collection that the exhibit belongs to.
+     * @dev Organize a new exhibit by deploying PaymentHandler and ExhibitNFT contracts.
+     * Automatically configures the PaymentHandler with the ExhibitNFT address for ticketing.
+     * @param exhibitId Unique exhibit identifier.
+     * @param name Name of the exhibit.
+     * @param symbol NFT symbol for ticketing.
+     * @param ticketPrice Predefined ticket price.
+     * @param beneficiaries Array of beneficiary addresses.
+     * @param shares Array of corresponding shares.
+     * @param baseURI Base URI for NFT metadata.
+     * @param location Exhibit location.
+     * @param artifactNFTAddress Associated ArtifactNFT address.
+     * @param details Additional exhibit details.
      */
     function organizeExhibit(
+        string memory exhibitId,
         string memory name,
         string memory symbol,
         uint256 ticketPrice,
         address[] memory beneficiaries,
         uint256[] memory shares,
         string calldata baseURI,
-        string memory location,
+        string calldata location,
         address artifactNFTAddress,
-        string memory details,
-        string memory exhibitId
-    ) public {
-        // Ensure that the exhibit ID has not already been taken
-        require(
-            address(museum.exhibits(exhibitId)) == address(0),
-            "ExhibitID already taken."
-        );
+        string calldata details
+    ) public onlyOwner {
+        // Ensure the exhibitId is unique via the museum registry.
+        require(address(museum.exhibits(exhibitId)) == address(0), "ExhibitID already taken");
 
-        // Create a new escrow contract for the exhibit
-        EventEscrow newEscrow = new EventEscrow(
-            usdtToken,
-            beneficiaries,
-            shares
-        );
+        // Deploy PaymentHandler for this exhibit.
+        PaymentHandler paymentHandler = new PaymentHandler(beneficiaries, shares);
 
-        ExhibitNFT newExhibit = new ExhibitNFT(
+        // Deploy ExhibitNFT for on-chain ticketing.
+        ExhibitNFT exhibitNFT = new ExhibitNFT(
             name,
             symbol,
             ticketPrice,
-            newEscrow,
-            address(museum),
+            address(paymentHandler),
+            owner(),
             baseURI,
             location,
             artifactNFTAddress,
             details
         );
-        exhibits[exhibitId] = address(newExhibit);
+
+        // Automatically configure PaymentHandler to use ExhibitNFT as the ticketing contract.
+        paymentHandler.setTicketingEnabled(true, address(exhibitNFT));
+
+        // Register the exhibit with the Museum.
+        museum.curateExhibit(exhibitId, exhibitNFT);
+
+        // Save the ExhibitNFT address in the mapping.
+        exhibits[exhibitId] = address(exhibitNFT);
 
         emit ExhibitNFTDeployed(
             exhibitId,
-            address(newExhibit),
-            address(newEscrow),
+            address(exhibitNFT),
+            address(paymentHandler),
             address(museum)
         );
     }
