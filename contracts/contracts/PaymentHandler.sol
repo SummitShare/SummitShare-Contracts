@@ -88,4 +88,18 @@ contract PaymentHandler {
 
         emit PaymentProcessed(msg.sender, amount, address(token), paymentType);
     }
+
+    /**
+     * @dev Fallback function to reject any native ETH transfers.
+     */
+    fallback() external payable {
+        revert("This contract only accepts ERC20 tokens");
     }
+
+    /**
+     * @dev Receive function to reject any native ETH transfers.
+     */
+    receive() external payable {
+        revert("This contract only accepts ERC20 tokens");
+    }
+}
