@@ -22,10 +22,11 @@ contract ArtifactNFT is ERC721A, Ownable {
     }
 
     function mint(address to, uint256 quantity) external onlyOwner returns (uint256) {
+        uint256 startTokenId = _nextTokenId();
         _mint(to, quantity);
         emit Minted(to, quantity);
+        return startTokenId;
     }
-
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI;

@@ -45,7 +45,7 @@ async function main() {
   // Connect to the contracts
   const OrganizerService = await ethers.getContractFactory("EventOrganizerService");
   const Museum = await ethers.getContractFactory("Museum");
-  const UsdcToken = await ethers.getContractFactory("MUSDC");
+  const UsdcToken = await ethers.getContractFactory("USDT");
 
   const organizerService = OrganizerService.attach(organizerServiceAddress).connect(owner);
   const museum = Museum.attach(museumAddress).connect(owner);
@@ -64,7 +64,7 @@ async function main() {
   // const ownerAddress = "<ownerAddress>";
   // const funderAddress = "<funderAddress>";
 
-  // const UsdcToken = await ethers.getContractFactory("MUSDC");
+  // const UsdcToken = await ethers.getContractFactory("USDT");
   // const usdcTokenContract = UsdcToken.attach(usdcTokenAddress).connect(owner);
   // // Testing something that should work...
   // //check funder usdc balance
