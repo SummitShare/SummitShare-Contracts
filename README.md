@@ -1,75 +1,42 @@
-# RVS-m Smart Contracts README
+# **Smart Contract Overview**
 
-## General Overview
+The contracts are structured to handle artifact tokenization, event organization, exhibit ticketing, and revenue distribution. Below is a high-level interaction diagram and function descriptions.
 
-At the heart of the SummitShare platform lies a sophisticated network of smart contracts, each serving as a cornerstone in the digital repatriation and virtual exhibition ecosystem. Imagine a well-orchestrated symphony, where each musician plays a critical role in creating a harmonious performance. Similarly, our smart contracts work in concert to enable a seamless and secure experience for users, artifacts, and exhibitions.
+---
 
-The **RVS-m** *(Revenue Sharing Smart Contract Mesh)* suite forms the backbone of the SummitShare platform, enabling digital repatriation and virtual exhibition management. It comprises systems for token management, consensus-driven decision making, revenue distribution, and digital escrow services, each designed to facilitate transparent, secure, and efficient operations.
+### **Contract Interaction Diagram**
 
-```
+```plaintext
 EventOrganizerService
 ├──► ArtifactNFT        - Manages digital tokens representing artifacts.
-├──► EventEscrow        - Handles escrow and revenue distribution.
-├──► Museum             - Organizes exhibits and manages artifact indexing.
-└──► ExhibitNFT         - Responsible for minting tickets and allocations.
+├──► ExhibitNFT         - Manages tickets and allocations for exhibits.
+├──► PaymentHandler     - Handles ticket payments and revenue distribution.
+└──► Museum             - Organizes exhibits and manages artifact indexing.
 
 ArtifactNFT
 └──► Museum             - Artifacts are indexed under museums.
 
 Museum
 ├──► ExhibitNFT         - Requests ticket minting for exhibitions.
-└──► EventEscrow        - Receives distributions from escrow.
+└──► PaymentHandler     - Distributes revenue from exhibit ticket sales.
 
 ExhibitNFT
-└──► EventEscrow        - Managed by EventEscrow for ticket sales and revenue handling.
+└──► PaymentHandler     - Handles ticket sales and revenue distribution.
 
+PaymentHandler
+└──► Beneficiaries      - Distributes collected revenue based on predefined shares.
 ```
+### **One-Line Contract Descriptions**
 
----
+1. **`ArtifactNFT.sol`** – Manages the minting and ownership of artifact-based NFTs, linking them to museums for indexing and provenance tracking.
 
-## System Components and Execution Flow Analysis 💻
+2. **`EventOrganizerService.sol`** – Facilitates the creation and organization of exhibits by deploying `ArtifactNFT` and `ExhibitNFT` contracts while managing event structuring and revenue distribution.
 
+3. **`ExhibitNFT.sol`** – Handles the minting of exhibit tickets as NFTs, ensuring secure access control for event participants and linking ticket sales to the payment handler.
 
-### Artifact Management System (AMS)
+4. **`Museum.sol`** – Acts as a central registry for exhibits, curating `ExhibitNFT` instances and verifying ticket ownership for museum-organized events.
 
-- **Purpose:** Facilitates the representation of digital or physical artifacts as unique, indivisible tokens on the blockchain.
-- **Key Contracts:** [`ArtifactNFT.sol`](https://github.com/bicos-io01/Revenue-Sharing-Source/blob/Central/packages/contracts/contracts/ArtifactNFT.sol)
-- **Application Context:** This contract is responsible for minting NFTs that represent artifacts within the platform. Each token encapsulates metadata detailing the artifact's attributes, provenance, and ownership history.
-- **Execution Flow:** Initiation of the `mint` function within `ArtifactNFT.sol` generates a new token. This process involves specifying the token's metadata, which includes details about the artifact it represents. Once minted, these tokens can be transferred between addresses, representing changes in ownership or loans to exhibitions.
-
-### Event Management and Governance System (EMGS)
-
-- **Purpose:** Enables the platform to manage virtual exhibitions and engage stakeholders in democratic decision-making processes.
-- **Key Contracts:** [`EventOrganizerService.sol`](https://github.com/bicos-io01/Revenue-Sharing-Source/blob/Central/packages/contracts/contracts/EventOrganizerService.sol)
-- **Application Context:** Utilized to organize exhibits, manage stakeholder proposals, and facilitate consensus-driven decisions. It acts as the central controller, coordinating between different components of the platform.
-- **Execution Flow:** Stakeholders submit proposals that have succesfully been voted on and have reached consensus **(100%)** via the `EventOrganizerService`, which facilitates the posting of exhibtions onto chain as well as the management of contract events for data aggregation via the [subgraph](https://github.com/bicos-io01/Revenue-Sharing-Source/tree/Central/packages/subgraph).
-
-### Revenue and Escrow Management System (REMS)
-
-- **Purpose:** Manages the secure holding and distribution of funds, ensuring equitable revenue sharing and trust in transactions.
-- **Key Contracts:** [`EventEscrow.sol`](https://github.com/bicos-io01/Revenue-Sharing-Source/blob/Central/packages/contracts/contracts/EventEscrow.sol)
-- **Interaction Script within Dapp:** [`eventEscrowComponent.tsx`](https://github.com/bicos-io01/Revenue-Sharing-Source/blob/Central/packages/dapp/src/functonality/eventEscrowComponent.tsx)
-- **Application Context:** This contract holds funds in escrow for exhibitions
-
-and distributes revenue according to predefined rules once certain conditions are met. It supports the platform's revenue sharing model by automating payouts to artifact owners, museums, and other stakeholders involved in an exhibition.
-- **Execution Flow:** Upon the setup of an exhibition, funds from ticket sales or sponsorships are held by `EventEscrow.sol`. The contract then distributes these funds based on the outcomes of the exhibition—such as its success or adherence to agreed terms. Distribution parameters are predefined, ensuring transparency and fairness in revenue sharing among contributors.
-
-### Ticketing and Exhibition Access System (TEAS)
-
-- **Purpose:** Provides a mechanism for minting tickets as NFTs, facilitating access control to virtual exhibitions.
-- **Key Contracts:** [`ExhibitNFT.sol`](https://github.com/bicos-io01/Revenue-Sharing-Source/blob/Central/packages/contracts/contracts/ExhibitNFT.sol)
-- **Application Context:** `ExhibitNFT.sol` is pivotal for creating and managing access passes to virtual exhibitions. It mints NFT tickets, which grant holders the right to enter and participate in specific virtual exhibitions hosted on the platform.
-- **Execution Flow:** When an exhibition is organized, `ExhibitNFT.sol` mints tickets as NFTs, which are then sold or distributed to attendees. These NFTs serve as verifiable proofs of purchase, allowing holders access to the exhibition. The contract ensures that each ticket is unique and tied to a specific event, enhancing security and providing a collectible aspect to exhibition participation.
-
-### Museum and Artifact Indexing System (MAIS)
-
-- **Purpose:** Manages the association of artifacts with owners and museums, indexing artifacts for easy discovery and verification of ownership.
-- **Key Contracts:** [`Museum.sol`](https://github.com/bicos-io01/Revenue-Sharing-Source/blob/Central/packages/contracts/contracts/Museum.sol)
-- **Interaction Script within Dapp:** [`ticketpurchasecomponent.tsx`](https://github.com/bicos-io01/Revenue-Sharing-Source/blob/Central/packages/dapp/src/functonality/ticketpurchasecomponent.tsx)
-- **Application Context:** Facilitates the creation of digital representations for physical museums and galleries on the platform. It allows these entities to curate exhibitions, verify ownership of artifacts, and manage their collections digitally.
-- **Execution Flow:** Museums use `Museum.sol` to register on the platform, create exhibitions, and list artifacts under their custody. The contract associates artifacts (represented by NFTs) with their respective museum or owner, creating a verifiable index of ownership and provenance. It also manages the process of ticket purchasing for events curated by museums, ensuring that funds are appropriately directed to the `EventEscrow` for revenue distribution.
-
-
+5. **`PaymentHandler.sol`** – Manages ticket sales, processes payments in ERC-20 tokens, and distributes revenue to predefined beneficiaries based on assigned shares.
 
 ## Development Tools and Scripts 🚀
 
@@ -90,55 +57,57 @@ _GAS=true hardhat test",
 
 ## Gas Report (Sepolia)
 
-The following gas report provides insights into the gas efficiency of key contract functions. It reflects the results under Solc version 0.8.20 with optimization enabled. 
+The following Hardhat test report provides insights into the gas efficiency of key contract functions. It reflects the results under Solc version 0.8.20 with optimization enabled. 
 
 For additional information please see contract [coverage](https://github.com/bicos-io01/Revenue-Sharing-Source/tree/Central/packages/contracts/coverage).
-If contract coverage or any part of this readme is not up to date with latest RVS-m create an issue with a PR to update coverage and send an email to **summitshare.eth@gmail.com** with *'Documentation Update!* in the subject.
+If contract coverage or any part of this readme is not up to date with latest RVS-m create an issue with a PR to update coverage and send an email to [**info@summitshare.co**](mailto:info@summitshare.co) with *'Documentation Update!* in the subject.
+
 
 ```
 .. code-block:: shell
 
-  ·---------------------------------------------------|---------------------------|-------------|-----------------------------·
-  |               Solc version: 0.8.20                ·  Optimizer enabled: true  ·  Runs: 200  ·  Block limit: 30000000 gas  │
-  ····················································|···························|·············|······························
-  |  Methods                                          ·              100 gwei/gas               ·       3102.29 usd/eth       │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  Contract               ·  Method                 ·  Min        ·  Max        ·  Avg        ·  # calls      ·  usd (avg)  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  ArtifactNFT            ·  mint                   ·          -  ·          -  ·     101833  ·            2  ·      31.59  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  Donations              ·  donate                 ·          -  ·          -  ·      69176  ·            2  ·      21.46  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  Donations              ·  updateWalletAddresses  ·          -  ·          -  ·      36137  ·            2  ·      11.21  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  EventEscrow            ·  distributePayments     ·          -  ·          -  ·      95793  ·            2  ·      29.72  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  EventOrganizerService  ·  organizeExhibit        ·    1786259  ·    1876680  ·    1821175  ·           13  ·     564.98  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  ExhibitNFT             ·  mintTicket             ·          -  ·          -  ·      97467  ·            5  ·      30.24  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  MUSDC                  ·  approve                ·      46347  ·      46383  ·      46369  ·           11  ·      14.39  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  MUSDC                  ·  transfer               ·      51632  ·      51644  ·      51637  ·            7  ·      16.02  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  Museum                 ·  curateExhibit          ·      32640  ·      49740  ·      47295  ·            7  ·      14.67  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  Museum                 ·  purchaseTicket         ·      93173  ·     149273  ·     123004  ·           13  ·      38.16  │
-  ··························|·························|·············|·············|·············|···············|··············
-  |  Deployments                                      ·                                         ·  % of limit   ·             │
-  ····················································|·············|·············|·············|···············|··············
-  |  ArtifactNFT                                      ·    1149394  ·    1149478  ·    1149441  ·        3.8 %  ·     356.59  │
-  ····················································|·············|·············|·············|···············|··············
-  |  Donations                                        ·          -  ·          -  ·     614059  ·          2 %  ·     190.50  │
-  ····················································|·············|·············|·············|···············|··············
-  |  EventEscrow                                      ·          -  ·          -  ·     495422  ·        1.7 %  ·     153.69  │
-  ····················································|·············|·············|·············|···············|··············
-  |  EventOrganizerService                            ·    4044400  ·    4044412  ·    4044410  ·       13.5 %  ·    1254.69  │
-  ····················································|·············|·············|·············|···············|··············
-  |  ExhibitNFT                                       ·          -  ·          -  ·    1410523  ·        4.7 %  ·     437.59  │
-  ····················································|·············|·············|·············|···············|··············
-  |  MUSDC                                            ·     553733  ·     553793  ·     553767  ·        1.8 %  ·     171.79  │
-  ····················································|·············|·············|·············|···············|··············
-  |  Museum                                           ·          -  ·          -  ·     603933  ·          2 %  ·     187.36  │
-  ·---------------------------------------------------|-------------|-------------|-------------|---------------|-------------·
-  ```
+  ·-------------------------------------------------|---------------------------|-------------|-----------------------------·
+  |              Solc version: 0.8.20               ·  Optimizer enabled: true  ·  Runs: 200  ·  Block limit: 30000000 gas  │
+  ··················································|···························|·············|······························
+  |  Methods                                        ·              100 gwei/gas               ·       1890.62 usd/eth       │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  Contract               ·  Method               ·  Min        ·  Max        ·  Avg        ·  # calls      ·  usd (avg)  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  ArtifactNFT            ·  mint                 ·          -  ·          -  ·     101933  ·            2  ·      19.27  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  EventOrganizerService  ·  deployArtifactNFT    ·          -  ·          -  ·    1071093  ·            2  ·     202.50  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  EventOrganizerService  ·  organizeExhibit      ·    2040046  ·    2129702  ·    2070104  ·            9  ·     391.38  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  ExhibitNFT             ·  mintTicket           ·          -  ·          -  ·      96906  ·           10  ·      18.32  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  ExhibitNFT             ·  setBaseURI           ·          -  ·          -  ·      57678  ·            1  ·      10.90  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  Museum                 ·  transferOwnership    ·      28613  ·      28625  ·      28621  ·            3  ·       5.41  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  PaymentHandler         ·  processPayment       ·     118780  ·     219761  ·     185584  ·           19  ·      35.09  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  PaymentHandler         ·  setTicketingEnabled  ·      29375  ·      46487  ·      44584  ·            9  ·       8.43  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  USDT                   ·  approve              ·      46335  ·      46347  ·      46345  ·           12  ·       8.76  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  USDT                   ·  transfer             ·      51584  ·      51608  ·      51592  ·            3  ·       9.75  │
+  ··························|·······················|·············|·············|·············|···············|··············
+  |  Deployments                                    ·                                         ·  % of limit   ·             │
+  ··················································|·············|·············|·············|···············|··············
+  |  ArtifactNFT                                    ·    1146268  ·    1190927  ·    1151870  ·        3.8 %  ·     217.77  │
+  ··················································|·············|·············|·············|···············|··············
+  |  EventOrganizerService                          ·    4302935  ·    4302947  ·    4302943  ·       14.3 %  ·     813.52  │
+  ··················································|·············|·············|·············|···············|··············
+  |  ExhibitNFT                                     ·    1419117  ·    1486339  ·    1452728  ·        4.8 %  ·     274.66  │
+  ··················································|·············|·············|·············|···············|··············
+  |  Museum                                         ·          -  ·          -  ·     379851  ·        1.3 %  ·      71.82  │
+  ··················································|·············|·············|·············|···············|··············
+  |  PaymentHandler                                 ·     712095  ·     758788  ·     735442  ·        2.5 %  ·     139.04  │
+  ··················································|·············|·············|·············|···············|··············
+  |  USDT                                           ·     553622  ·     553646  ·     553627  ·        1.8 %  ·     104.67  │
+  ·-------------------------------------------------|-------------|-------------|-------------|---------------|-------------·
+
+  40 passing (3s)
+
+```
