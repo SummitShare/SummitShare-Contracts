@@ -328,6 +328,6 @@ describe("PaymentHandler Contract Tests", function() {
       .to.emit(paymentHandler, "PaymentDistributed")
       .withArgs(beneficiary3.address, ticketPrice * BigInt(20) / BigInt(100), usdtToken.target, 1)
       .to.emit(paymentHandler, "TicketMinted")
-      .withArgs(buyer1.address);
+      .withArgs(buyer1.address, 0);
   });
 });

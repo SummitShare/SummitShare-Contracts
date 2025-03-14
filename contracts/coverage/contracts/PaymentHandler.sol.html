@@ -22,12 +22,12 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>21/21</span>
+        <span class='fraction'>23/23</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">65% </span>
+        <span class="strong">63.64% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>13/20</span>
+        <span class='fraction'>14/22</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -37,7 +37,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>26/26</span>
+        <span class='fraction'>28/28</span>
       </div>
     </div>
   </div>
@@ -188,6 +188,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">10×</span>
 <span class="cline-any cline-yes">10×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -198,7 +199,7 @@
 <span class="cline-any cline-yes">22×</span>
 <span class="cline-any cline-yes">22×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
 <span class="cline-any cline-yes">10×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -221,6 +222,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-yes">14×</span>
 <span class="cline-any cline-yes">35×</span>
 <span class="cline-any cline-yes">35×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -241,13 +243,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">14×</span>
 <span class="cline-any cline-yes">14×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">14×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">14×</span>
 <span class="cline-any cline-yes">12×</span>
@@ -255,6 +254,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
@@ -262,13 +262,14 @@ pragma solidity ^0.8.0;
 &nbsp;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 &nbsp;
 interface ITicketing {
-    function mintTicket(address to) external;
+    function mintTicket(address to) external returns (uint256);
 }
 &nbsp;
-contract PaymentHandler is Ownable {
-    uint256 public totalShares;
+contract PaymentHandler is Ownable,ReentrancyGuard {
+    uint256 public immutable totalShares;
     bool public onChainTicketingEnabled;
     address public ticketingContract;
     address[] public beneficiaries;
@@ -292,20 +293,20 @@ contract PaymentHandler is Ownable {
         uint256[] shares,
         uint256 totalShares
     );
-    event TicketMinted(address indexed recipient);
+    event TicketMinted(address indexed recipient, uint256 tokenId);
 &nbsp;
     constructor(address[] memory _beneficiaries, uint256[] memory _shares) Ownable(msg.sender) {
         <span class="missing-if-branch" title="else path not taken" >E</span>require(_beneficiaries.length == _shares.length, "Length mismatch");
         <span class="missing-if-branch" title="else path not taken" >E</span>require(_beneficiaries.length &gt; 0, "No beneficiaries provided");
         
-        totalShares = 0; // Explicitly initialize
+        uint256 sharesSum = 0; // Explicitly initialize
         
         for (uint256 i = 0; i &lt; _beneficiaries.length; i++) {
             beneficiaries.push(_beneficiaries[i]);
             shares[_beneficiaries[i]] = _shares[i];
-            totalShares += _shares[i];
+            sharesSum += _shares[i];
         }
-        
+         totalShares = sharesSum;  // Immutable assignment done once.
         emit PaymentHandlerDeployed(_beneficiaries, _shares, totalShares);
     }
 &nbsp;
@@ -327,7 +328,8 @@ contract PaymentHandler is Ownable {
      * @param paymentType The type of payment (1 = Ticket, 2 = Donation).
      */
     function _splitTokens(IERC20 token, uint256 amount, uint256 paymentType) internal {
-        for (uint256 i = 0; i &lt; beneficiaries.length; i++) {
+        uint256 beneficiaryLength = beneficiaries.length;
+        for (uint256 i = 0; i &lt; beneficiaryLength; i++) {
             address beneficiary = beneficiaries[i];
             uint256 payment = (amount * shares[beneficiary]) / totalShares;
             
@@ -345,24 +347,22 @@ contract PaymentHandler is Ownable {
      * @param amount The amount being paid.
      * @param paymentType The type of payment (1 = Ticket, 2 = Donation).
      */
-    function processPayment(IERC20 token, uint256 amount, uint256 paymentType) external {
-        require(amount &gt; 0, "Amount must be &gt; 0");
-        
-        // Transfer tokens first
-        bool success = token.transferFrom(msg.sender, address(this), amount);
-        <span class="missing-if-branch" title="else path not taken" >E</span>require(success, "Token transfer failed");
-        
-        // Split tokens to beneficiaries
-        _splitTokens(token, amount, paymentType);
-        
-        // Mint ticket if applicable
-        if (paymentType == 1 &amp;&amp; onChainTicketingEnabled &amp;&amp; ticketingContract != address(0)) {
-            ITicketing(ticketingContract).mintTicket(msg.sender);
-            emit TicketMinted(msg.sender);
-        }
-        
-        emit PaymentProcessed(msg.sender, amount, address(token), paymentType);
+    function processPayment(IERC20 token, uint256 amount, uint256 paymentType) external <span class="missing-if-branch" title="else path not taken" >E</span>nonReentrant {
+    require(amount &gt; 0, "Amount must be &gt; 0");
+&nbsp;
+    bool success = token.transferFrom(msg.sender, address(this), amount);
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(success, "Token transfer failed");
+&nbsp;
+    _splitTokens(token, amount, paymentType);
+&nbsp;
+    if (paymentType == 1 &amp;&amp; onChainTicketingEnabled &amp;&amp; ticketingContract != address(0)) {
+        uint256 tokenId = ITicketing(ticketingContract).mintTicket(msg.sender);
+        emit TicketMinted(msg.sender, tokenId);
     }
+&nbsp;
+    emit PaymentProcessed(msg.sender, amount, address(token), paymentType);
+}
+&nbsp;
 }
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -370,7 +370,7 @@ contract PaymentHandler is Ownable {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Mar 14 2025 12:12:38 GMT+0200 (Central Africa Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Mar 14 2025 16:49:05 GMT+0200 (Central Africa Time)
 </div>
 </div>
 <script src="../prettify.js"></script>
