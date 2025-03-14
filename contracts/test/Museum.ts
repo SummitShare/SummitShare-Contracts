@@ -237,6 +237,13 @@ describe("Museum Contract Tests", function() {
     expect(await museum.verifyTicketOwnership("Exhibit1", buyer.address)).to.be.true;
   });
 
+  it("should return false for non-existent exhibitID", async function() {
+    const { museum, buyer } = await loadFixture(deployContracts);
+    
+    // Verify ticket ownership for a non-existent exhibit
+    expect(await museum.verifyTicketOwnership("NonExistentExhibit", buyer.address)).to.be.false;
+  });
+
   it("should correctly update the payment handler balance after ticket purchase", async function() {
     const { museum, buyer, usdtToken, exhibit1NFTAddress } = await loadFixture(deployContracts);
 
