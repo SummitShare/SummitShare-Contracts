@@ -2,12 +2,13 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface ITicketing {
     function mintTicket(address to) external;
 }
 
-contract PaymentHandler {
+contract PaymentHandler is Ownable {
     uint256 public totalShares;
     bool public onChainTicketingEnabled;
     address public ticketingContract;
@@ -34,12 +35,7 @@ contract PaymentHandler {
     );
     event TicketMinted(address indexed recipient);
 
-    modifier onlyBeneficiary() {
-        require(shares[msg.sender] > 0, "Not a beneficiary");
-        _;
-    }
-
-    constructor(address[] memory _beneficiaries, uint256[] memory _shares) {
+    constructor(address[] memory _beneficiaries, uint256[] memory _shares) Ownable(msg.sender) {
         require(_beneficiaries.length == _shares.length, "Length mismatch");
         require(_beneficiaries.length > 0, "No beneficiaries provided");
         
@@ -59,7 +55,7 @@ contract PaymentHandler {
      * @param _enabled Boolean flag to enable or disable ticketing.
      * @param _ticketingContract Address of the ticketing contract (ExhibitNFT).
      */
-    function setTicketingEnabled(bool _enabled, address _ticketingContract) external onlyBeneficiary {
+    function setTicketingEnabled(bool _enabled, address _ticketingContract) external onlyOwner {
         require(_ticketingContract != address(0) || !_enabled, "Invalid ticketing contract");
         onChainTicketingEnabled = _enabled;
         ticketingContract = _ticketingContract;
@@ -102,16 +98,10 @@ contract PaymentHandler {
         
         // Mint ticket if applicable
         if (paymentType == 1 && onChainTicketingEnabled && ticketingContract != address(0)) {
-            try ITicketing(ticketingContract).mintTicket(msg.sender) {
-                emit TicketMinted(msg.sender);
-            } catch Error(string memory reason) {
-                revert(string(abi.encodePacked("Ticket minting failed: ", reason)));
-            } catch {
-                revert("Ticket minting failed");
-            }
+            ITicketing(ticketingContract).mintTicket(msg.sender);
+            emit TicketMinted(msg.sender);
         }
         
         emit PaymentProcessed(msg.sender, amount, address(token), paymentType);
     }
-
 }
