@@ -9,7 +9,7 @@ import "./PaymentHandler.sol";
 import "./ExhibitStructs.sol";
 
 contract EventOrganizerService is Ownable {
-    Museum public museum;
+    Museum public immutable museum;
     mapping(string => address) public exhibits;
 
     struct RevenueConfig {
@@ -39,13 +39,12 @@ contract EventOrganizerService is Ownable {
     function deployArtifactNFT(
         string memory name,
         string memory symbol,
-        address owner,
+        address ownerAddress,
         string memory baseURI
     ) external onlyOwner {
-        ArtifactNFT newArtifact = new ArtifactNFT(name, symbol, owner, baseURI);
-        emit ArtifactNFTDeployed(address(newArtifact), name, symbol, owner, baseURI);
+        ArtifactNFT newArtifact = new ArtifactNFT(name, symbol, ownerAddress, baseURI);
+        emit ArtifactNFTDeployed(address(newArtifact), name, symbol, ownerAddress, baseURI);
     }
-
 // Organize Exhibit function in EventOrganizerService
     function organizeExhibit(
     string calldata exhibitId,
@@ -67,11 +66,13 @@ contract EventOrganizerService is Ownable {
         details
     );
 
-    paymentHandler.setTicketingEnabled(true, address(exhibitNFT));
-    museum.curateExhibit(exhibitId, exhibitNFT);
+    // Update state first before external calls
     exhibits[exhibitId] = address(exhibitNFT);
 
     emit ExhibitNFTDeployed(exhibitId, address(exhibitNFT), address(paymentHandler), address(museum));
+
+    paymentHandler.setTicketingEnabled(true, address(exhibitNFT));
+    museum.curateExhibit(exhibitId, exhibitNFT);
 }
 
 

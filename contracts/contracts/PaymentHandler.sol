@@ -3,13 +3,14 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface ITicketing {
-    function mintTicket(address to) external;
+    function mintTicket(address to) external returns (uint256);
 }
 
-contract PaymentHandler is Ownable {
-    uint256 public totalShares;
+contract PaymentHandler is Ownable, ReentrancyGuard {
+    uint256 public immutable totalShares;
     bool public onChainTicketingEnabled;
     address public ticketingContract;
     address[] public beneficiaries;
@@ -33,20 +34,20 @@ contract PaymentHandler is Ownable {
         uint256[] shares,
         uint256 totalShares
     );
-    event TicketMinted(address indexed recipient);
+    event TicketMinted(address indexed recipient, uint256 tokenId);
 
     constructor(address[] memory _beneficiaries, uint256[] memory _shares) Ownable(msg.sender) {
         require(_beneficiaries.length == _shares.length, "Length mismatch");
         require(_beneficiaries.length > 0, "No beneficiaries provided");
         
-        totalShares = 0; // Explicitly initialize
+        uint256 sharesSum = 0; // Explicitly initialize
         
         for (uint256 i = 0; i < _beneficiaries.length; i++) {
             beneficiaries.push(_beneficiaries[i]);
             shares[_beneficiaries[i]] = _shares[i];
-            totalShares += _shares[i];
+            sharesSum += _shares[i];
         }
-        
+         totalShares = sharesSum;  // Immutable assignment done once.
         emit PaymentHandlerDeployed(_beneficiaries, _shares, totalShares);
     }
 
@@ -68,7 +69,8 @@ contract PaymentHandler is Ownable {
      * @param paymentType The type of payment (1 = Ticket, 2 = Donation).
      */
     function _splitTokens(IERC20 token, uint256 amount, uint256 paymentType) internal {
-        for (uint256 i = 0; i < beneficiaries.length; i++) {
+        uint256 beneficiaryLength = beneficiaries.length;
+        for (uint256 i = 0; i < beneficiaryLength; i++) {
             address beneficiary = beneficiaries[i];
             uint256 payment = (amount * shares[beneficiary]) / totalShares;
             
@@ -86,22 +88,20 @@ contract PaymentHandler is Ownable {
      * @param amount The amount being paid.
      * @param paymentType The type of payment (1 = Ticket, 2 = Donation).
      */
-    function processPayment(IERC20 token, uint256 amount, uint256 paymentType) external {
-        require(amount > 0, "Amount must be > 0");
-        
-        // Transfer tokens first
-        bool success = token.transferFrom(msg.sender, address(this), amount);
-        require(success, "Token transfer failed");
-        
-        // Split tokens to beneficiaries
-        _splitTokens(token, amount, paymentType);
-        
-        // Mint ticket if applicable
-        if (paymentType == 1 && onChainTicketingEnabled && ticketingContract != address(0)) {
-            ITicketing(ticketingContract).mintTicket(msg.sender);
-            emit TicketMinted(msg.sender);
-        }
-        
-        emit PaymentProcessed(msg.sender, amount, address(token), paymentType);
+    function processPayment(IERC20 token, uint256 amount, uint256 paymentType) external nonReentrant {
+    require(amount > 0, "Amount must be > 0");
+
+    bool success = token.transferFrom(msg.sender, address(this), amount);
+    require(success, "Token transfer failed");
+
+    _splitTokens(token, amount, paymentType);
+
+    if (paymentType == 1 && onChainTicketingEnabled && ticketingContract != address(0)) {
+        uint256 tokenId = ITicketing(ticketingContract).mintTicket(msg.sender);
+        emit TicketMinted(msg.sender, tokenId);
     }
+
+    emit PaymentProcessed(msg.sender, amount, address(token), paymentType);
+}
+
 }

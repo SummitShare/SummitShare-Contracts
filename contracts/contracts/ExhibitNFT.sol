@@ -9,13 +9,13 @@ import "./PaymentHandler.sol";
 import "./ExhibitStructs.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ExhibitNFT is ERC721, Ownable {
-    uint256 public ticketPrice;
-    address public paymentHandler;
+contract ExhibitNFT is ERC721, Ownable, ITicketing {
+    uint256 public immutable ticketPrice;
+    address public immutable paymentHandler;
     uint256 private totalMinted;
     string public baseURI;
     string public location;
-    address public artifactNFTAddress;
+    address public immutable artifactNFTAddress;
     string public details;
 
     event TicketMinted(address exhibit, address to, uint256 tokenId);
@@ -62,7 +62,7 @@ contract ExhibitNFT is ERC721, Ownable {
      * @param to Address to mint the ticket to.
      * @return tokenId The ID of the minted token.
      */
-    function mintTicket(address to) external returns (uint256) {
+    function mintTicket(address to) external override returns (uint256) {
         if (msg.sender != paymentHandler && msg.sender != owner()) {
             revert("Not authorized");
         }
