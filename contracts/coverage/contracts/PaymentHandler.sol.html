@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/PaymentHandler.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> PaymentHandler.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>21/21</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">50% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>10/20</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>4/4</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>26/26</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">19×</span>
+<span class="cline-any cline-yes">19×</span>
+<span class="cline-any cline-yes">19×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+&nbsp;
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+&nbsp;
+interface ITicketing {
+    function mintTicket(address to) external;
+}
+&nbsp;
+contract PaymentHandler is Ownable {
+    uint256 public totalShares;
+    bool public onChainTicketingEnabled;
+    address public ticketingContract;
+    address[] public beneficiaries;
+    mapping(address =&gt; uint256) public shares;
+&nbsp;
+    // Payment types: 1 = Ticket Sale, 2 = Donation.
+    event PaymentProcessed(
+        address indexed payer,
+        uint256 amount,
+        address token,
+        uint256 paymentType
+    );
+    event PaymentDistributed(
+        address beneficiary,
+        uint256 amount,
+        address token,
+        uint256 paymentType
+    );
+    event PaymentHandlerDeployed(
+        address[] beneficiaries,
+        uint256[] shares,
+        uint256 totalShares
+    );
+    event TicketMinted(address indexed recipient);
+&nbsp;
+    constructor(address[] memory _beneficiaries, uint256[] memory _shares) Ownable(msg.sender) {
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(_beneficiaries.length == _shares.length, "Length mismatch");
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(_beneficiaries.length &gt; 0, "No beneficiaries provided");
+        
+        totalShares = 0; // Explicitly initialize
+        
+        for (uint256 i = 0; i &lt; _beneficiaries.length; i++) {
+            beneficiaries.push(_beneficiaries[i]);
+            shares[_beneficiaries[i]] = _shares[i];
+            totalShares += _shares[i];
+        }
+        
+        emit PaymentHandlerDeployed(_beneficiaries, _shares, totalShares);
+    }
+&nbsp;
+    /**
+     * @dev Set the on-chain ticketing configuration.
+     * @param _enabled Boolean flag to enable or disable ticketing.
+     * @param _ticketingContract Address of the ticketing contract (ExhibitNFT).
+     */
+    function setTicketingEnabled(bool _enabled, address _ticketingContract) external <span class="missing-if-branch" title="else path not taken" >E</span>onlyOwner {
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(_ticketingContract != address(0) || <span class="branch-1 cbranch-no" title="branch not covered" >!_enabled</span>, "Invalid ticketing contract");
+        onChainTicketingEnabled = _enabled;
+        ticketingContract = _ticketingContract;
+    }
+&nbsp;
+    /**
+     * @dev Split tokens among beneficiaries according to their shares.
+     * @param token The ERC20 token to distribute.
+     * @param amount The total amount to distribute.
+     * @param paymentType The type of payment (1 = Ticket, 2 = Donation).
+     */
+    function _splitTokens(IERC20 token, uint256 amount, uint256 paymentType) internal {
+        for (uint256 i = 0; i &lt; beneficiaries.length; i++) {
+            address beneficiary = beneficiaries[i];
+            uint256 payment = (amount * shares[beneficiary]) / totalShares;
+            
+            <span class="missing-if-branch" title="else path not taken" >E</span>if (payment &gt; 0) { // Skip zero payments to save gas
+                bool success = token.transfer(beneficiary, payment);
+                <span class="missing-if-branch" title="else path not taken" >E</span>require(success, "Token transfer failed");
+                emit PaymentDistributed(beneficiary, payment, address(token), paymentType);
+            }
+        }
+    }
+&nbsp;
+    /**
+     * @dev Process a payment, split funds, and mint ticket if applicable.
+     * @param token The ERC20 token used for payment.
+     * @param amount The amount being paid.
+     * @param paymentType The type of payment (1 = Ticket, 2 = Donation).
+     */
+    function processPayment(IERC20 token, uint256 amount, uint256 paymentType) external {
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(amount &gt; 0, "Amount must be &gt; 0");
+        
+        // Transfer tokens first
+        bool success = token.transferFrom(msg.sender, address(this), amount);
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(success, "Token transfer failed");
+        
+        // Split tokens to beneficiaries
+        _splitTokens(token, amount, paymentType);
+        
+        // Mint ticket if applicable
+        <span class="missing-if-branch" title="else path not taken" >E</span>if (paymentType == 1 &amp;&amp; onChainTicketingEnabled &amp;&amp; ticketingContract != address(0)) {
+            ITicketing(ticketingContract).mintTicket(msg.sender);
+            emit TicketMinted(msg.sender);
+        }
+        
+        emit PaymentProcessed(msg.sender, amount, address(token), paymentType);
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Mar 14 2025 11:50:14 GMT+0200 (Central Africa Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
