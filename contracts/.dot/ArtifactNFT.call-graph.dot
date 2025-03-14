@@ -1,0 +1,236 @@
+strict digraph {
+rankdir="LR"
+node [shape=box]
+subgraph cluster_10289_IERC721A {
+label = "IERC721A"
+"10289_setApprovalForAll" [label="setApprovalForAll"]
+"10289_balanceOf" [label="balanceOf"]
+"10289_approve" [label="approve"]
+"10289_totalSupply" [label="totalSupply"]
+"10289_supportsInterface" [label="supportsInterface"]
+"10289_getApproved" [label="getApproved"]
+"10289_symbol" [label="symbol"]
+"10289_ownerOf" [label="ownerOf"]
+"10289_name" [label="name"]
+"10289_safeTransferFrom" [label="safeTransferFrom"]
+"10289_transferFrom" [label="transferFrom"]
+"10289_tokenURI" [label="tokenURI"]
+"10289_isApprovedForAll" [label="isApprovedForAll"]
+}subgraph cluster_2130_Context {
+label = "Context"
+"2130__msgSender" [label="_msgSender"]
+"2130__msgData" [label="_msgData"]
+"2130__contextSuffixLength" [label="_contextSuffixLength"]
+}subgraph cluster_147_Ownable {
+label = "Ownable"
+"147_constructor" [label="constructor"]
+"147__transferOwnership" [label="_transferOwnership"]
+"147_owner" [label="owner"]
+"147_transferOwnership" [label="transferOwnership"]
+"147__checkOwner" [label="_checkOwner"]
+"147_renounceOwnership" [label="renounceOwnership"]
+"147_transferOwnership" -> "147__transferOwnership"
+"147_renounceOwnership" -> "147__transferOwnership"
+"147__checkOwner" -> "147_owner"
+"147_constructor" -> "147__transferOwnership"
+"147_transferOwnership" -> "147_onlyOwner"
+"147__checkOwner" -> "147__msgSender"
+"147_renounceOwnership" -> "147_onlyOwner"
+}subgraph cluster_10068_ERC721A {
+label = "ERC721A"
+"10068_approve" [label="approve"]
+"10068__nextExtraData" [label="_nextExtraData"]
+"10068__mintERC2309" [label="_mintERC2309"]
+"10068_supportsInterface" [label="supportsInterface"]
+"10068__msgSenderERC721A" [label="_msgSenderERC721A"]
+"10068_constructor" [label="constructor"]
+"10068__ownershipAt" [label="_ownershipAt"]
+"10068__packedOwnershipOf" [label="_packedOwnershipOf"]
+"10068__toString" [label="_toString"]
+"10068__totalBurned" [label="_totalBurned"]
+"10068__isSenderApprovedOrOwner" [label="_isSenderApprovedOrOwner"]
+"10068_totalSupply" [label="totalSupply"]
+"10068__mint" [label="_mint"]
+"10068_balanceOf" [label="balanceOf"]
+"10068_ownerOf" [label="ownerOf"]
+"10068_safeTransferFrom" [label="safeTransferFrom"]
+"10068__nextInitializedFlag" [label="_nextInitializedFlag"]
+"10068__totalSpotMinted" [label="_totalSpotMinted"]
+"10068_isApprovedForAll" [label="isApprovedForAll"]
+"10068__getApprovedSlotAndAddress" [label="_getApprovedSlotAndAddress"]
+"10068__ownershipIsInitialized" [label="_ownershipIsInitialized"]
+"10068__safeMint" [label="_safeMint"]
+"10068__burn" [label="_burn"]
+"10068__setExtraDataAt" [label="_setExtraDataAt"]
+"10068__exists" [label="_exists"]
+"10068__unpackedOwnership" [label="_unpackedOwnership"]
+"10068__packOwnershipData" [label="_packOwnershipData"]
+"10068__startTokenId" [label="_startTokenId"]
+"10068__checkContractOnERC721Received" [label="_checkContractOnERC721Received"]
+"10068__mintSpot" [label="_mintSpot"]
+"10068__totalMinted" [label="_totalMinted"]
+"10068__safeMintSpot" [label="_safeMintSpot"]
+"10068_name" [label="name"]
+"10068_setApprovalForAll" [label="setApprovalForAll"]
+"10068__approve" [label="_approve"]
+"10068__revert" [label="_revert"]
+"10068_symbol" [label="symbol"]
+"10068__ownershipOf" [label="_ownershipOf"]
+"10068__initializeOwnershipAt" [label="_initializeOwnershipAt"]
+"10068__setAux" [label="_setAux"]
+"10068_getApproved" [label="getApproved"]
+"10068__extraData" [label="_extraData"]
+"10068_transferFrom" [label="transferFrom"]
+"10068_tokenURI" [label="tokenURI"]
+"10068__getAux" [label="_getAux"]
+"10068__beforeTokenTransfers" [label="_beforeTokenTransfers"]
+"10068__sequentialUpTo" [label="_sequentialUpTo"]
+"10068__nextTokenId" [label="_nextTokenId"]
+"10068__baseURI" [label="_baseURI"]
+"10068__packedOwnershipExists" [label="_packedOwnershipExists"]
+"10068__numberMinted" [label="_numberMinted"]
+"10068__afterTokenTransfers" [label="_afterTokenTransfers"]
+"10068__numberBurned" [label="_numberBurned"]
+"10068__ownershipOf" -> "10068__packedOwnershipOf"
+"10068__burn" -> "10068__revert"
+"10068_tokenURI" -> "10068__exists"
+"10068__mintSpot" -> "10068__nextInitializedFlag"
+"10068__safeMintSpot" -> "10068__mintSpot"
+"10068__safeMint" -> "10068__safeMint"
+"10068__burn" -> "10068__burn"
+"10068__approve" -> "10068_isApprovedForAll"
+"10068_constructor" -> "10068__startTokenId"
+"10068__exists" -> "10068__sequentialUpTo"
+"10068_totalSupply" -> "10068__sequentialUpTo"
+"10068_transferFrom" -> "10068__packOwnershipData"
+"10068__checkContractOnERC721Received" -> "10068__msgSenderERC721A"
+"10068__safeMintSpot" -> "10068__safeMintSpot"
+"10068__burn" -> "10068__msgSenderERC721A"
+"10068__safeMintSpot" -> "10068__revert"
+"10068__totalMinted" -> "10068__startTokenId"
+"10068_getApproved" -> "10068__revert"
+"10068__mintSpot" -> "10068__nextExtraData"
+"10068_ownerOf" -> "10068__packedOwnershipOf"
+"10068__mint" -> "10068__sequentialUpTo"
+"10068_tokenURI" -> "10068__baseURI"
+"10068__mint" -> "10068__nextExtraData"
+"10068_safeTransferFrom" -> "10068__checkContractOnERC721Received"
+"10068__mintERC2309" -> "10068__packOwnershipData"
+"10068__burn" -> "10068__getApprovedSlotAndAddress"
+"10068__exists" -> "10068__startTokenId"
+"10068__approve" -> "10068__approve"
+"10068_totalSupply" -> "10068__startTokenId"
+"10068_constructor" -> "10068__revert"
+"10068__safeMint" -> "10068__revert"
+"10068__approve" -> "10068__revert"
+"10068__mintSpot" -> "10068__beforeTokenTransfers"
+"10068__packedOwnershipOf" -> "10068__revert"
+"10068__packedOwnershipOf" -> "10068__packedOwnershipExists"
+"10068_tokenURI" -> "10068__revert"
+"10068__safeMint" -> "10068__checkContractOnERC721Received"
+"10068__burn" -> "10068__beforeTokenTransfers"
+"10068__burn" -> "10068__packOwnershipData"
+"10068__checkContractOnERC721Received" -> "10068__revert"
+"10068__mint" -> "10068__beforeTokenTransfers"
+"10068__mintSpot" -> "10068__packedOwnershipExists"
+"10068_transferFrom" -> "10068__revert"
+"10068_transferFrom" -> "10068__isSenderApprovedOrOwner"
+"10068__packedOwnershipOf" -> "10068__sequentialUpTo"
+"10068__burn" -> "10068__packedOwnershipOf"
+"10068_transferFrom" -> "10068__beforeTokenTransfers"
+"10068__ownershipOf" -> "10068__unpackedOwnership"
+"10068__mint" -> "10068__packOwnershipData"
+"10068_approve" -> "10068__approve"
+"10068__mintERC2309" -> "10068__beforeTokenTransfers"
+"10068__mintSpot" -> "10068__afterTokenTransfers"
+"10068_getApproved" -> "10068__exists"
+"10068_transferFrom" -> "10068__afterTokenTransfers"
+"10068__burn" -> "10068_isApprovedForAll"
+"10068_transferFrom" -> "10068__getApprovedSlotAndAddress"
+"10068__ownershipAt" -> "10068__unpackedOwnership"
+"10068__mintERC2309" -> "10068__nextExtraData"
+"10068_transferFrom" -> "10068_isApprovedForAll"
+"10068__safeMintSpot" -> "10068__checkContractOnERC721Received"
+"10068__mint" -> "10068__afterTokenTransfers"
+"10068_transferFrom" -> "10068__packedOwnershipOf"
+"10068__approve" -> "10068_ownerOf"
+"10068__totalMinted" -> "10068__sequentialUpTo"
+"10068_safeTransferFrom" -> "10068_transferFrom"
+"10068__mint" -> "10068__nextInitializedFlag"
+"10068__exists" -> "10068__packedOwnershipExists"
+"10068__packedOwnershipOf" -> "10068__startTokenId"
+"10068__setExtraDataAt" -> "10068__revert"
+"10068_balanceOf" -> "10068__revert"
+"10068_transferFrom" -> "10068__nextExtraData"
+"10068__mintERC2309" -> "10068__afterTokenTransfers"
+"10068__mintERC2309" -> "10068__revert"
+"10068__mintSpot" -> "10068__sequentialUpTo"
+"10068__burn" -> "10068__afterTokenTransfers"
+"10068_tokenURI" -> "10068__toString"
+"10068__safeMint" -> "10068__mint"
+"10068__mintSpot" -> "10068__revert"
+"10068__approve" -> "10068__msgSenderERC721A"
+"10068__mint" -> "10068__revert"
+"10068__burn" -> "10068__nextExtraData"
+"10068__initializeOwnershipAt" -> "10068__packedOwnershipOf"
+"10068_constructor" -> "10068__sequentialUpTo"
+"10068__mintERC2309" -> "10068__nextInitializedFlag"
+"10068_safeTransferFrom" -> "10068__revert"
+"10068__mintSpot" -> "10068__packOwnershipData"
+"10068__mintERC2309" -> "10068__sequentialUpTo"
+"10068_setApprovalForAll" -> "10068__msgSenderERC721A"
+"10068_safeTransferFrom" -> "10068_safeTransferFrom"
+"10068__nextExtraData" -> "10068__extraData"
+"10068__burn" -> "10068__isSenderApprovedOrOwner"
+"10068_transferFrom" -> "10068__msgSenderERC721A"
+}subgraph cluster_7092_ArtifactNFT {
+label = "ArtifactNFT"
+"7092_constructor" [label="constructor"]
+"7092__baseURI" [label="_baseURI"]
+"7092_setBaseURI" [label="setBaseURI"]
+"7092_mint" [label="mint"]
+"7092_mint" -> "7092_onlyOwner"
+"7092_mint" -> "7092__nextTokenId"
+"7092_setBaseURI" -> "7092_onlyOwner"
+"7092_mint" -> "7092__mint"
+"7092_constructor" -> "7092_constructor"
+}subgraph cluster_solidity {
+label = "[Solidity]"
+"sload(uint256)" 
+"revert(uint256,uint256)" 
+"revert OwnableInvalidOwner(address)" 
+"mstore8(uint256,uint256)" 
+"mstore(uint256,uint256)" 
+"mload(uint256)" 
+"code(address)" 
+"timestamp()" 
+"abi.encodePacked()" 
+"sstore(uint256,uint256)" 
+"revert()" 
+"revert OwnableUnauthorizedAccount(address)" 
+"log4(uint256,uint256,uint256,uint256,uint256,uint256)" 
+"147_transferOwnership" -> "revert OwnableInvalidOwner(address)"
+"10068_tokenURI" -> "abi.encodePacked()"
+"10068__safeMintSpot" -> "revert()"
+"10068__revert" -> "mstore(uint256,uint256)"
+"10068__checkContractOnERC721Received" -> "mload(uint256)"
+"10068__checkContractOnERC721Received" -> "revert(uint256,uint256)"
+"10068_transferFrom" -> "log4(uint256,uint256,uint256,uint256,uint256,uint256)"
+"10068__burn" -> "sstore(uint256,uint256)"
+"10068__packOwnershipData" -> "timestamp()"
+"10068_transferFrom" -> "sstore(uint256,uint256)"
+"10068__toString" -> "mstore(uint256,uint256)"
+"10068__safeMint" -> "revert()"
+"10068__revert" -> "revert(uint256,uint256)"
+"10068__safeMint" -> "code(address)"
+"147__checkOwner" -> "revert OwnableUnauthorizedAccount(address)"
+"10068__getApprovedSlotAndAddress" -> "sload(uint256)"
+"10068__toString" -> "mstore8(uint256,uint256)"
+"10068__mintSpot" -> "log4(uint256,uint256,uint256,uint256,uint256,uint256)"
+"147_constructor" -> "revert OwnableInvalidOwner(address)"
+"10068__toString" -> "mload(uint256)"
+"10068_safeTransferFrom" -> "code(address)"
+"10068__safeMintSpot" -> "code(address)"
+"10068__mint" -> "log4(uint256,uint256,uint256,uint256,uint256,uint256)"
+}
+}
