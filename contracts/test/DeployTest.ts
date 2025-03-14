@@ -12,7 +12,7 @@ describe("Deployment Tests", function () {
 
         // Deploy USDC token
         const MockUSDC = await ethers.getContractFactory("USDT");
-        const usdcToken = await MockUSDC.connect(owner).deploy(ethers.parseUnits("20000000", 18));
+        const usdcToken = await MockUSDC.connect(owner).deploy(ethers.parseUnits("20000000", 6));
 
         // Define the ERC20 interface for type checking
         const erc20Interface = new ethers.Interface([
@@ -28,7 +28,7 @@ describe("Deployment Tests", function () {
         const typedTokenFunder = new ethers.Contract(usdcToken.target, erc20Interface, funder);
 
         // Distribute some USDC to the funders
-        await typedTokenOwner.transfer(funder.address, ethers.parseUnits("2000000", 18));
+        await typedTokenOwner.transfer(funder.address, ethers.parseUnits("2000000", 6));
 
         // Deploy Museum contract
         const Museum = await ethers.getContractFactory("Museum");
@@ -37,6 +37,9 @@ describe("Deployment Tests", function () {
         // Deploy EventOrganizerService with the deployed Museum
         const EventOrganizerService = await ethers.getContractFactory("EventOrganizerService");
         const organizerService = await EventOrganizerService.deploy(museum.target);
+
+        // Transfer ownership of Museum to EventOrganizerService
+        await museum.transferOwnership(organizerService.target);
 
         // Deploy ArtifactNFT contracts
         const ArtifactNFT = await ethers.getContractFactory("ArtifactNFT");
@@ -58,11 +61,9 @@ describe("Deployment Tests", function () {
         const exhibitInfo1 = {
             name: "Lusaka Art Gallery",
             symbol: "LAG",
-            ticketPrice: ethers.parseUnits("10", 18),
+            ticketPrice: ethers.parseUnits("10", 6),
             baseURI: "http://localhost:3000/api/ticket/",
-            location: "Lusaka,Zambia",
-            artifactNFTAddress: artifactNFT1.target,
-            details: "Expressing the word with color"
+            artifactNFTAddress: artifactNFT1.target
         };
 
         // Create revenue config struct for Exhibit1
@@ -75,11 +76,9 @@ describe("Deployment Tests", function () {
         const exhibitInfo2 = {
             name: "Womens History Museum",
             symbol: "WHM",
-            ticketPrice: ethers.parseUnits("10", 18),
+            ticketPrice: ethers.parseUnits("10", 6),
             baseURI: "http://localhost:3000/api/ticket/",
-            location: "New York,USA",
-            artifactNFTAddress: artifactNFT2.target,
-            details: "Those who walked before us and those to come."
+            artifactNFTAddress: artifactNFT2.target
         };
 
         // Create revenue config struct for Exhibit2
@@ -88,17 +87,27 @@ describe("Deployment Tests", function () {
             shares: [50, 50]
         };
 
+        const location1 = "Lusaka,Zambia";
+        const details1 = "Expressing the word with color";
+        
+        const location2 = "New York,USA";
+        const details2 = "Those who walked before us and those to come.";
+
         // Organize exhibits
         await organizerService.connect(owner).organizeExhibit(
             "exhibit1",
             exhibitInfo1,
-            revenueConfig1
+            revenueConfig1,
+            location1,
+            details1
         );
 
         await organizerService.connect(owner).organizeExhibit(
             "exhibit2",
             exhibitInfo2,
-            revenueConfig2
+            revenueConfig2,
+            location2,
+            details2
         );
 
         // Retrieve the ExhibitNFT contract
@@ -127,17 +136,14 @@ describe("Deployment Tests", function () {
             funder
         );
 
-        // Register the exhibit with the museum
-        await museum.connect(owner).curateExhibit("exhibit1", exhibitNFTAddress);
-
         // Approve and purchase tickets
-        await typedTokenFunder.approve(paymentHandlerAddress, ethers.parseUnits("30", 18));
+        await typedTokenFunder.approve(paymentHandlerAddress, ethers.parseUnits("30", 6));
         
         // Purchase 3 tickets
         for (let i = 0; i < 3; i++) {
             await typedPaymentHandler.processPayment(
                 usdcToken.target,
-                ethers.parseUnits("10", 18),
+                ethers.parseUnits("10", 6),
                 1 // 1 = Ticket Sale
             );
         }
@@ -161,7 +167,7 @@ describe("Deployment Tests", function () {
 
     describe("Deploy", function () {
         it("Should correctly organize an exhibit and emit an event", async function () {
-            const { museum, owner, artifactNFT1, exhibitNFT } = await deployContracts();
+            const { museum, owner, artifactNFT1, exhibitNFT } = await loadFixture(deployContracts);
 
             // Check that the ExhibitNFT was deployed
             expect(await museum.exhibits("exhibit1")).to.equal(exhibitNFT.target);
@@ -173,7 +179,7 @@ describe("Deployment Tests", function () {
         });
 
         it("should test the payment handler balance increases after each purchase", async function () {
-            const { museum, owner, artifactNFT1, exhibitNFT, usdcToken, paymentHandlerAddress, typedTokenOwner, beneficiary1, beneficiary2 } = await deployContracts();
+            const { museum, owner, artifactNFT1, exhibitNFT, usdcToken, paymentHandlerAddress, typedTokenOwner, beneficiary1, beneficiary2 } = await loadFixture(deployContracts);
 
             // Check that the ExhibitNFT was deployed
             expect(await museum.exhibits("exhibit1")).to.equal(exhibitNFT.target);
@@ -185,12 +191,12 @@ describe("Deployment Tests", function () {
             const beneficiary2Balance = await typedTokenOwner.balanceOf(beneficiary2.address);
             
             // Verify each beneficiary received their share
-            expect(beneficiary1Balance).to.be.at.least(ethers.parseUnits("15", 18));
-            expect(beneficiary2Balance).to.be.at.least(ethers.parseUnits("15", 18));
+            expect(beneficiary1Balance).to.be.at.least(ethers.parseUnits("15", 6));
+            expect(beneficiary2Balance).to.be.at.least(ethers.parseUnits("15", 6));
         });
 
         it("should test the payment handler immediately distributes funds", async function () {
-            const { museum, owner, artifactNFT1, exhibitNFT, usdcToken, paymentHandlerAddress, typedTokenOwner, typedTokenFunder, beneficiary1, funder } = await deployContracts();
+            const { museum, owner, artifactNFT1, exhibitNFT, usdcToken, paymentHandlerAddress, typedTokenOwner, typedTokenFunder, beneficiary1, funder } = await loadFixture(deployContracts);
 
             // Check that the ExhibitNFT was deployed
             expect(await museum.exhibits("exhibit1")).to.equal(exhibitNFT.target);
@@ -211,12 +217,12 @@ describe("Deployment Tests", function () {
             );
             
             // Approve tokens for payment
-            await typedTokenFunder.approve(paymentHandlerAddress, ethers.parseUnits("10", 18));
+            await typedTokenFunder.approve(paymentHandlerAddress, ethers.parseUnits("10", 6));
             
             // Process another payment
             await typedPaymentHandler.processPayment(
                 usdcToken.target,
-                ethers.parseUnits("10", 18),
+                ethers.parseUnits("10", 6),
                 1 // 1 = Ticket Sale
             );
             
@@ -224,7 +230,8 @@ describe("Deployment Tests", function () {
             const finalBeneficiary1Balance = await typedTokenOwner.balanceOf(beneficiary1.address);
             
             // Beneficiary1 should have received 5 more tokens (50% of 10 tokens)
-            expect(finalBeneficiary1Balance.sub(initialBeneficiary1Balance)).to.equal(ethers.parseUnits("5", 18));
+            const difference = finalBeneficiary1Balance - initialBeneficiary1Balance;
+            expect(difference).to.equal(ethers.parseUnits("5", 6));
             
             // Payment handler balance should be 0 since funds are immediately distributed
             const paymentHandlerBalance = await typedTokenOwner.balanceOf(paymentHandlerAddress);

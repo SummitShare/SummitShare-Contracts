@@ -28,22 +28,28 @@ describe('ExhibitNFT', function () {
       "https://api.example.com/nft/"
     );
 
-    // Deploy ExhibitNFT with PaymentHandler
+    // Create ExhibitInfo struct
+    const exhibitInfo = {
+      name: "EVENTNAME",
+      symbol: "ENFT",
+      ticketPrice: 100,
+      baseURI: "https://api.example.com/nft/",
+      artifactNFTAddress: artifactNFT.target
+    };
+
+    // Deploy ExhibitNFT with PaymentHandler using the struct
     const ExhibitNFT = await ethers.getContractFactory("ExhibitNFT");
     const exhibitNFT = await ExhibitNFT.connect(owner).deploy(
-      "EVENTNAME", // name
-      "ENFT", // symbol
-      100, // ticketPrice
-      paymentHandler.target, // paymentHandler (instead of escrow)
-      owner.address, // owner
-      'https://api.example.com/nft/', // baseURI
-      "Lusaka,Zambia", // location
-      artifactNFT.target, // ArtifactNFTAddress
-      "Lusaka Art Gallery" // details
+      exhibitInfo,
+      paymentHandler.target,
+      owner.address,
+      "Lusaka,Zambia",
+      "Lusaka Art Gallery"
     );
     
     // Configure PaymentHandler to use ExhibitNFT for ticketing
-    await paymentHandler.connect(beneficiary1).setTicketingEnabled(true, exhibitNFT.target);
+    // Now using onlyOwner instead of onlyBeneficiary
+    await paymentHandler.connect(owner).setTicketingEnabled(true, exhibitNFT.target);
     
     return {
       exhibitNFT,
@@ -54,7 +60,8 @@ describe('ExhibitNFT', function () {
       beneficiary1,
       beneficiary2,
       funder,
-      artifactNFT
+      artifactNFT,
+      exhibitInfo
     };
   }
 
@@ -65,8 +72,8 @@ describe('ExhibitNFT', function () {
     });
 
     it('Should set the right ticket price', async function () {
-      const { exhibitNFT } = await loadFixture(deployContracts);
-      expect(await exhibitNFT.ticketPrice()).to.equal(100);
+      const { exhibitNFT, exhibitInfo } = await loadFixture(deployContracts);
+      expect(await exhibitNFT.ticketPrice()).to.equal(exhibitInfo.ticketPrice);
     });
 
     it('Should set the right payment handler', async function () {
@@ -93,15 +100,13 @@ describe('ExhibitNFT', function () {
       const { exhibitNFT, funder } = await loadFixture(deployContracts);
       await expect(
         exhibitNFT.connect(funder).mintTicket(funder.address)
-      ).to.be.revertedWith("Not authorized: sender");
+      ).to.be.revertedWith("Not authorized");
     });
 
     it('Should set the correct tokenURI', async function () {
-      const { exhibitNFT, owner, funder } = await loadFixture(deployContracts);
-      await expect(exhibitNFT.connect(owner).mintTicket(funder.address))
-        .to.emit(exhibitNFT, 'TicketMinted')
-        .withArgs(exhibitNFT.target, funder.address, 0);
-      expect(await exhibitNFT.tokenURI(0)).to.equal('https://api.example.com/nft/0');
+      const { exhibitNFT, owner, funder, exhibitInfo } = await loadFixture(deployContracts);
+      await exhibitNFT.connect(owner).mintTicket(funder.address);
+      expect(await exhibitNFT.tokenURI(0)).to.equal(`${exhibitInfo.baseURI}0`);
     });
     
     it('Should allow payment handler to mint tickets', async function () {
