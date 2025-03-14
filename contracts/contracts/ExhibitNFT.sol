@@ -6,6 +6,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./PaymentHandler.sol";
+import "./ExhibitStructs.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ExhibitNFT is ERC721, Ownable {
@@ -29,36 +30,32 @@ contract ExhibitNFT is ERC721, Ownable {
     );
 
     constructor(
-        string memory name,
-        string memory symbol,
-        uint256 _ticketPrice,
-        address _paymentHandler,
-        address _owner,
-        string memory _baseURI,
-        string memory _location,
-        address _artifactNFTAddress,
-        string memory _details
-    ) ERC721(name, symbol) Ownable(_owner) {
-        require(_paymentHandler != address(0), "Payment handler cannot be zero address");
-        
-        ticketPrice = _ticketPrice;
-        paymentHandler = _paymentHandler;
-        baseURI = _baseURI;
-        totalMinted = 0;
-        location = _location;
-        artifactNFTAddress = _artifactNFTAddress;
-        details = _details;
+    ExhibitInfo memory info,
+    address _paymentHandler,
+    address _owner,
+    string memory _location,
+    string memory _details
+) ERC721(info.name, info.symbol) Ownable(_owner) {
+    require(_paymentHandler != address(0), "Invalid payment handler");
+    
+    ticketPrice = info.ticketPrice;
+    paymentHandler = _paymentHandler;
+    baseURI = info.baseURI;
+    totalMinted = 0;
+    artifactNFTAddress = info.artifactNFTAddress;
+    location = _location;
+    details = _details;
 
-        // Emit the event 
-        emit ExhibitCreated(
-            name,
-            symbol,
-            _ticketPrice, 
-            _paymentHandler,
-            _owner,
-            _artifactNFTAddress
-        );
-    }
+    emit ExhibitCreated(
+        info.name,
+        info.symbol,
+        info.ticketPrice, 
+        _paymentHandler,
+        _owner,
+        info.artifactNFTAddress
+    );
+}
+
 
     /**
      * @dev Mint a new ticket NFT.
