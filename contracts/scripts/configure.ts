@@ -12,19 +12,21 @@ async function main() {
     const beneficiary1 : string =  "0xc0243933ba0a7b3fffbb960c58011be37ab3a3fd" ;
     const beneficiary2 : string = "0x3B6b0Ba44Ef20324c99F5A152C2fF19a13369498";
 
-  
-    const exhibit1 ={
-        name: "The Leading Ladies of Zambia",
-        symbol: "LLEZ",
+    const exhibitInfo = {
+        name: "Exhibit_v2",
+        symbol:"EV2",
         ticketPrice: ethers.parseUnits("5", 6),
-        beneficiaries: [beneficiary1, beneficiary2],
-        shares: [80, 20],
-        baseURI: "https://s3.tebi.io/summitshare-tickets/",
-        location: "Virtual Space",
-        artifactNFT: artifactNFT1,
-        details: "Join us as we reclaim and create new history.",
-        id: "LLE1"
+        artifactNFTAddress: artifactNFT1 
+    };
+
+    const revenueConfig = {
+        beneficiaries: [ beneficiary1, beneficiary2],
+        shares: [60, 40]
     }
+
+    // Deploy PaymentHnadler Contract
+    const PaymentHandler = await ethers.getContractFactory("PaymentHandler")
+    const paymentHandler = PaymentHandler.connect(owner).deploy(revenueConfig.beneficiaries, revenueConfig.shares)
 
     // Connect to the contracts
     const OrganizerService = await ethers.getContractFactory("EventOrganizerService");
@@ -34,22 +36,19 @@ async function main() {
     const organizerService = OrganizerService.attach(organizerServiceAddress).connect(owner);
     const museum = Museum.attach(museumAddress).connect(owner);
     const artifactNFT = ArtifactNFT.attach(artifactNFT1).connect(owner);
-    
+
     // Organize an exhibit
     const tx1 = await organizerService.connect(owner).organizeExhibit( 
-            exhibit1.name, // name
-            exhibit1.symbol, // exhibit symbol
-            exhibit1.ticketPrice, // ticket price
-            exhibit1.beneficiaries, // beneficiaries
-            exhibit1.shares, // shares
-            exhibit1.baseURI, // base URI
-            exhibit1.location, // location
-            exhibit1.artifactNFT, // ArtifactNFT address
-            exhibit1.details, // details
-            exhibit1.id //exhibit id
+        "EXV2", // note: standardize IDSs
+        exhibitInfo,
+        revenueConfig,
+        "LUN", //note: standardize location names to IATA codes
+        "Exhibit Details" // note: check if there's a need for a character limit most likely to be done frontendside
         );
     const receipt1 = await tx1.wait(6);
     console.log("Organized Exhibit 1", receipt1.status)
+
+    // need to incorporate paymentHandler as well as get its address
 
  
     // Read the contract state

@@ -5,17 +5,18 @@ async function main() {
   // Retrieve signers
   const [ owner ] = await ethers.getSigners();
 
-  const usdtTokenAddress = "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58"
-
   // Deploying Museum contract
   const Museum = await ethers.getContractFactory("Museum");
-  const museum = await Museum.connect(owner).deploy(usdtTokenAddress);
+  const museum = await Museum.connect(owner).deploy();
   await museum.deploymentTransaction().wait(2);
+
 
   // Deploy EventOrganizerService with the deployed Museum and USDC token addresses
   const EventOrganizerService = await ethers.getContractFactory("EventOrganizerService");
-  const organizerService = await EventOrganizerService.deploy(museum.target, usdtTokenAddress);
+  const organizerService = await EventOrganizerService.deploy(museum.target);
   await organizerService.deploymentTransaction().wait(2);
+
+  await museum.transferOwnership(organizerService.target);
 
 
   // Deploy ArtifactNFT
