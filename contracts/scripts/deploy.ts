@@ -24,7 +24,7 @@ async function main() {
   // Deploy ArtifactNFT
   const artifact1 = {
     name: "Exhibit v2",
-    symbol: "TS0",
+    symbol: "TS1",
     owner: owner.address,
     baseURI: "https://s3.tebi.io/summitshare-uris/",
   }

@@ -1,32 +1,36 @@
 import { ethers } from "hardhat";
 
 async function main() {
-
     // Get the signers
     const [owner] = await ethers.getSigners();
+    
     // Hardcoded addresses
-    const museumAddress = "0x3935e5BED378aCeD49655b3E1fA8c0e68550fbaa";
-    const organizerServiceAddress = "0x662388C92915aD4be269452E7069d4AC56b07e82";
-    const artifactNFT1 = "0xE3f9Cb6608fEFb78FDB2FD5496d62dc547236AAa";
+    const museumAddress = "0xA81Febe32BaeE60556A3Cf993dF27606e2cC02F4";
+    const organizerServiceAddress = "0x3f620D709b4734fcfF59733e5C384EB2424E0EAA";
+    const artifactNFT1 = "0xe8EE4BADEf8A5f8629Fc9f00AA1f13F6b808511E";
 
-    const beneficiary1 : string =  "0xc0243933ba0a7b3fffbb960c58011be37ab3a3fd" ;
-    const beneficiary2 : string = "0x3B6b0Ba44Ef20324c99F5A152C2fF19a13369498";
+    const beneficiary1: string = "0xA259489699DA3296ac0211e83A5c7cB5FeB3E33f";
+    const beneficiary2: string = "0x6E95E4a97efb1FaDE341Cd867F07101C7b997151";
 
+    const exhibitId = "TS1";
+    
+    // Create ExhibitInfo struct
     const exhibitInfo = {
-        name: "Exhibit_v2",
-        symbol:"EV2",
+        name: "Test Exhibit",
+        symbol: "TS1",
         ticketPrice: ethers.parseUnits("5", 6),
-        artifactNFTAddress: artifactNFT1 
+        baseURI: "https://s3.tebi.io/summitshare-tickets/",
+        artifactNFTAddress: artifactNFT1
     };
-
+    
+    // Create RevenueConfig struct
     const revenueConfig = {
-        beneficiaries: [ beneficiary1, beneficiary2],
-        shares: [60, 40]
-    }
-
-    // Deploy PaymentHnadler Contract
-    const PaymentHandler = await ethers.getContractFactory("PaymentHandler")
-    const paymentHandler = PaymentHandler.connect(owner).deploy(revenueConfig.beneficiaries, revenueConfig.shares)
+        beneficiaries: [beneficiary1, beneficiary2],
+        shares: [80, 20]
+    };
+    
+    const location = "Virtual Space";
+    const details = "Join us as we reclaim and create new history.";
 
     // Connect to the contracts
     const OrganizerService = await ethers.getContractFactory("EventOrganizerService");
@@ -37,38 +41,90 @@ async function main() {
     const museum = Museum.attach(museumAddress).connect(owner);
     const artifactNFT = ArtifactNFT.attach(artifactNFT1).connect(owner);
 
-    // Organize an exhibit
-    const tx1 = await organizerService.connect(owner).organizeExhibit( 
-        "EXV2", // note: standardize IDSs
+
+    // Organize an exhibit with the new function signature
+    console.log("Organizing exhibit...");
+    const tx1 = await organizerService.organizeExhibit(
+        exhibitId,
         exhibitInfo,
         revenueConfig,
-        "LUN", //note: standardize location names to IATA codes
-        "Exhibit Details" // note: check if there's a need for a character limit most likely to be done frontendside
-        );
+        location,
+        details
+    );
+    
     const receipt1 = await tx1.wait(6);
-    console.log("Organized Exhibit 1", receipt1.status)
-
-    // need to incorporate paymentHandler as well as get its address
-
- 
-    // Read the contract state
-    const exhibitNFTAddress = await organizerService.exhibits(exhibit1.id);
-    console.log("ExhibitNFT 1 deployed to:", exhibitNFTAddress)
-
-    const tx3 =  await museum.curateExhibit(exhibit1.id, exhibitNFTAddress);
-    const receipt3 = await tx3.wait(6);
-    console.log("Curated Exhibit 1", receipt3.status)
-
-    // get usdcToken set on museum exhibits
-    const exhibitMuseumAddress = await museum.exhibits(exhibit1.id);
-
-    console.log("ExhibitNFT 1 deployed to:", exhibitNFTAddress)
-    console.log("Exhibit1 Museum deployed to:", exhibitMuseumAddress)
-
-    //mint artifactNFTs - exhibit 1
+    console.log("Organized Exhibit:", receipt1.status);
+    
+    // Get the ExhibitNFT address from the event
+    let exhibitNFTAddress;
+    let paymentHandlerAddress;
+    
+    for (const log of receipt1.logs) {
+        try {
+            const parsedLog = organizerService.interface.parseLog(log);
+            if (parsedLog && parsedLog.name === "ExhibitNFTDeployed") {
+                exhibitNFTAddress = parsedLog.args.exhibitNFTAddress;
+                paymentHandlerAddress = parsedLog.args.paymentHandlerAddress;
+                break;
+            }
+        } catch (e) {
+            // Skip logs that can't be parsed
+            continue;
+        }
+    }
+    
+    console.log("ExhibitNFT deployed to:", exhibitNFTAddress);
+    console.log("PaymentHandler deployed to:", paymentHandlerAddress);
+    
+    // Connect to the ExhibitNFT contract
+    const ExhibitNFT = await ethers.getContractFactory("ExhibitNFT");
+    const exhibitNFT = ExhibitNFT.attach(exhibitNFTAddress).connect(owner);
+    
+    // Connect to the PaymentHandler contract
+    const PaymentHandler = await ethers.getContractFactory("PaymentHandler");
+    const paymentHandler = PaymentHandler.attach(paymentHandlerAddress).connect(owner);
+    
+    // Verify the exhibit is registered in the museum
+    const exhibitMuseumAddress = await museum.exhibits(exhibitId);
+    console.log("Exhibit in Museum:", exhibitMuseumAddress);
+    
+    // Mint ArtifactNFTs
+    console.log("Minting ArtifactNFTs...");
     const tx4 = await artifactNFT.mint(owner.address, 6);
     const receipt4 = await tx4.wait(6);
-    console.log("Minted ArtifactNFT 1", receipt4.status)
+    console.log("Minted ArtifactNFT:", receipt4.status);
+    
+    // Get information from the PaymentHandler
+    const totalShares = await paymentHandler.totalShares();
+    console.log("Total shares in PaymentHandler:", totalShares.toString());
+    
+    // Check if ticketing is enabled
+    const ticketingEnabled = await paymentHandler.onChainTicketingEnabled();
+    console.log("Ticketing enabled:", ticketingEnabled);
+    
+    // Get the ticketing contract address
+    const ticketingContract = await paymentHandler.ticketingContract();
+    console.log("Ticketing contract:", ticketingContract);
+    
+    // // Example: Disable ticketing
+    // console.log("Disabling ticketing...");
+    // const tx5 = await paymentHandler.setTicketingEnabled(false, ethers.ZeroAddress);
+    // const receipt5 = await tx5.wait(6);
+    // console.log("Disabled ticketing:", receipt5.status);
+    
+    // // Verify ticketing is disabled
+    // const ticketingEnabledAfter = await paymentHandler.onChainTicketingEnabled();
+    // console.log("Ticketing enabled after update:", ticketingEnabledAfter);
+    
+    // // Example: Re-enable ticketing
+    // console.log("Re-enabling ticketing...");
+    // const tx6 = await paymentHandler.setTicketingEnabled(true, exhibitNFTAddress);
+    // const receipt6 = await tx6.wait(6);
+    // console.log("Re-enabled ticketing:", receipt6.status);
+    
+    // // Verify ticketing is enabled again
+    // const ticketingEnabledFinal = await paymentHandler.onChainTicketingEnabled();
+    // console.log("Ticketing enabled final state:", ticketingEnabledFinal);
 }
 
 main()
