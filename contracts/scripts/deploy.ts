@@ -1,27 +1,30 @@
-// Import ethers from Hardhat, not necessary to import it separately
-const { ethers } = require("hardhat");
+import { ethers } from "hardhat";
 
 async function main() {
   // Retrieve signers
   const [ owner ] = await ethers.getSigners();
 
-  const usdtTokenAddress = "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58"
-
   // Deploying Museum contract
   const Museum = await ethers.getContractFactory("Museum");
-  const museum = await Museum.connect(owner).deploy(usdtTokenAddress);
+  const museum = await Museum.connect(owner).deploy();
   await museum.deploymentTransaction().wait(2);
 
-  // Deploy EventOrganizerService with the deployed Museum and USDC token addresses
+  // Deploy EventOrganizerService with the deployed Museum
   const EventOrganizerService = await ethers.getContractFactory("EventOrganizerService");
-  const organizerService = await EventOrganizerService.deploy(museum.target, usdtTokenAddress);
+  const organizerService = await EventOrganizerService.deploy(museum.target);
   await organizerService.deploymentTransaction().wait(2);
+
+  // Transfer ownership of Museum to EventOrganizerService
+  console.log("Transferring Museum ownership to EventOrganizerService...");
+  const transferTx = await museum.transferOwnership(organizerService.target);
+  await transferTx.wait(2);
+  console.log("Museum ownership transferred to EventOrganizerService");
 
 
   // Deploy ArtifactNFT
   const artifact1 = {
-    name: "The Leading Ladies of Zambia",
-    symbol: "LLE",
+    name: "Exhibit v2",
+    symbol: "TS1",
     owner: owner.address,
     baseURI: "https://s3.tebi.io/summitshare-uris/",
   }
@@ -37,8 +40,10 @@ async function main() {
   console.log("Deployed ArtifactNFT 1", receipt0.status)
 
   console.log("Events from ArtifactNFT 1 deployment:");
-  receipt0.logs.forEach((log: { eventName: any; args: any; }, index: any) => {
-    console.log(`Event ${index}:`, log.eventName, log.args);
+  receipt0.logs.forEach((log, index) => {
+    if ('args' in log) {
+      console.log(`Event ${index}:`, log.eventName, log.args);
+    }
   });
 
   // log addresses

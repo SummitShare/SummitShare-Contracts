@@ -8,7 +8,7 @@
     "test:coverage": "hardhat coverage --solcoverjs ./.solcover.js --temp build/contracts --testfiles \"./test/*.ts\"",
     "build": "hardhat compile && node sync-abis.js",
     "deploy:dev": "hardhat run --network sepolia scripts/deploy.ts",
-    "configure:dev": "hardhat run --network optimism scripts/configure.ts",
+    "configure:dev": "hardhat run --network sepolia scripts/configure.ts",
     "deploy:prod": "hardhat run --network optimism scripts/deploy.ts",
     "configure:prod": "hardhat run --network optimism scripts/configure.ts",
     "mock:dev": "hardhat run --network scripts/mock.ts",

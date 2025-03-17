@@ -11,7 +11,7 @@ dotenv.config();
 const SEPOLIA_RPC_URL = process.env.ETH_RPC_URL;
 const OP_RPC_URL = process.env.OP_RPC_URL;
 
-const accounts = process.env.PRIVATE_KEYS?.split(',');
+const accounts = process.env.DEV_PRIVATE_KEYS?.split(',');
 
 const config: HardhatUserConfig = {
   solidity: {
