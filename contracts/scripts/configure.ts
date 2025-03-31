@@ -1,5 +1,30 @@
 import { ethers } from "hardhat";
 
+// Define types for our configuration
+export interface RevenueConfig {
+    beneficiaries: string[];
+    shares: number[];
+}
+
+export interface ExhibitInfo {
+    name: string;
+    symbol: string;
+    ticketPrice: bigint;
+    baseURI: string;
+    artifactNFTAddress: string;
+}
+
+// Export the revenue configuration for reuse in other scripts
+export const getRevenueConfig = (): RevenueConfig => {
+    const beneficiary1: string = "0xA259489699DA3296ac0211e83A5c7cB5FeB3E33f";
+    const beneficiary2: string = "0x6E95E4a97efb1FaDE341Cd867F07101C7b997151";
+    
+    return {
+        beneficiaries: [beneficiary1, beneficiary2],
+        shares: [80, 20]
+    };
+};
+
 async function main() {
     // Get the signers
     const [owner] = await ethers.getSigners();
@@ -9,13 +34,10 @@ async function main() {
     const organizerServiceAddress = "0x3f620D709b4734fcfF59733e5C384EB2424E0EAA";
     const artifactNFT1 = "0xe8EE4BADEf8A5f8629Fc9f00AA1f13F6b808511E";
 
-    const beneficiary1: string = "0xA259489699DA3296ac0211e83A5c7cB5FeB3E33f";
-    const beneficiary2: string = "0x6E95E4a97efb1FaDE341Cd867F07101C7b997151";
-
     const exhibitId = "TS1";
     
     // Create ExhibitInfo struct
-    const exhibitInfo = {
+    const exhibitInfo: ExhibitInfo = {
         name: "Test Exhibit",
         symbol: "TS1",
         ticketPrice: ethers.parseUnits("5", 6),
@@ -23,11 +45,8 @@ async function main() {
         artifactNFTAddress: artifactNFT1
     };
     
-    // Create RevenueConfig struct
-    const revenueConfig = {
-        beneficiaries: [beneficiary1, beneficiary2],
-        shares: [80, 20]
-    };
+    // Get the revenue configuration
+    const revenueConfig = getRevenueConfig();
     
     const location = "Virtual Space";
     const details = "Join us as we reclaim and create new history.";
