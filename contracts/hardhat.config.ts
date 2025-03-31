@@ -8,8 +8,13 @@ import "@openzeppelin/hardhat-upgrades";
 import "@nomicfoundation/hardhat-verify";
 dotenv.config();
 
-const SEPOLIA_RPC_URL = process.env.ETH_RPC_URL;
-const OP_RPC_URL = process.env.OP_RPC_URL;
+// RPC URLs from environment variables with fallbacks
+const SEPOLIA_RPC_URL = process.env.ETH_RPC_URL || "https://sepolia.infura.io/v3/your-api-key";
+const OP_RPC_URL = process.env.OP_RPC_URL || "https://sepolia.optimism.io";
+const BASE_RPC_URL = process.env.BASE_RPC_URL || "https://sepolia.base.org";
+const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL || "https://mainnet.infura.io/v3/your-api-key";
+const OPTIMISM_MAINNET_RPC_URL = process.env.OPTIMISM_MAINNET_RPC_URL || "https://mainnet.optimism.io";
+const BASE_MAINNET_RPC_URL = process.env.BASE_MAINNET_RPC_URL || "https://mainnet.base.org";
 
 const accounts = process.env.DEV_PRIVATE_KEYS?.split(',');
 
@@ -24,25 +29,57 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    // Development networks
     sepolia: {
       url: SEPOLIA_RPC_URL,
       accounts,
       chainId: 11155111, // ETH Sepolia chain ID
       gasPrice: "auto",
     },
-
     optimismSepolia: {
       url: OP_RPC_URL,
       accounts,
-      chainId: 10, // OP SEPOLIA chain ID
+      chainId: 11155420, // OP Sepolia chain ID
+      gasPrice: "auto",
+    },
+    baseSepolia: {
+      url: BASE_RPC_URL || "https://sepolia.base.org",
+      accounts,
+      chainId: 84532, // Base Sepolia chain ID
+      gasPrice: "auto",
+    },
+    // Production networks
+    mainnet: {
+      url: MAINNET_RPC_URL,
+      accounts,
+      chainId: 1, // Ethereum Mainnet
+      gasPrice: "auto",
+    },
+    optimism: {
+      url: OPTIMISM_MAINNET_RPC_URL,
+      accounts,
+      chainId: 10, // Optimism Mainnet
+      gasPrice: "auto",
+    },
+    base: {
+      url: BASE_MAINNET_RPC_URL,
+      accounts,
+      chainId: 8453, // Base Mainnet
       gasPrice: "auto",
     }
   },
 
   etherscan: {
     apiKey: {
+      // Testnets
+      sepolia: process.env.ETHEREUM_API_KEY || "",
+      optimisticSepolia: process.env.OPTIMISM_API_KEY || "",
+      baseSepolia: process.env.BASE_API_KEY || "",
+      
+      // Mainnets
+      mainnet: process.env.ETHEREUM_API_KEY || "",
       optimisticEthereum: process.env.OPTIMISM_API_KEY || "",
-      mainnetEthereum: process.env.ETHEREUM_API_KEY || "",
+      base: process.env.BASE_API_KEY || "",
     },
   },
 
