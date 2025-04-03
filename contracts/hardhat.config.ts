@@ -9,10 +9,10 @@ import "@nomicfoundation/hardhat-verify";
 dotenv.config();
 
 // RPC URLs from environment variables with fallbacks
-const SEPOLIA_RPC_URL = process.env.ETH_RPC_URL || "https://sepolia.infura.io/v3/your-api-key";
+const SEPOLIA_RPC_URL = process.env.ETH_RPC_URL 
 const OP_RPC_URL = process.env.OP_RPC_URL || "https://sepolia.optimism.io";
 const BASE_RPC_URL = process.env.BASE_RPC_URL || "https://sepolia.base.org";
-const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL || "https://mainnet.infura.io/v3/your-api-key";
+const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL 
 const OPTIMISM_MAINNET_RPC_URL = process.env.OPTIMISM_MAINNET_RPC_URL || "https://mainnet.optimism.io";
 const BASE_MAINNET_RPC_URL = process.env.BASE_MAINNET_RPC_URL || "https://mainnet.base.org";
 
@@ -41,12 +41,14 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 11155420, // OP Sepolia chain ID
       gasPrice: "auto",
+      timeout: 200000
     },
     baseSepolia: {
       url: BASE_RPC_URL || "https://sepolia.base.org",
       accounts,
       chainId: 84532, // Base Sepolia chain ID
       gasPrice: "auto",
+      timeout: 200000
     },
     // Production networks
     mainnet: {

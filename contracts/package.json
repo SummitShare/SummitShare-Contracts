@@ -14,9 +14,13 @@
     "mock:dev": "hardhat run --network scripts/mock.ts",
     "sync:abis": "node sync-abis.js",
     
-    "deploy:handler:dev": "scripts/deploy-handler.sh dev",
-    "deploy:handler:prod": "scripts/deploy-handler.sh prod",
-    "deploy:handler": "scripts/deploy-handler.sh",
+  "deploy:handler:sepolia": "hardhat run --network sepolia scripts/deployHandler.ts",
+  "deploy:handler:optimismSepolia": "hardhat run --network optimismSepolia scripts/deployHandler.ts",
+  "deploy:handler:baseSepolia": "hardhat run --network baseSepolia scripts/deployHandler.ts",
+
+  "deploy:handler:mainnet": "hardhat run --network ethereum scripts/deployHandler.ts",
+  "deploy:handler:optimism": "hardhat run --network optimism scripts/deployHandler.ts",
+  "deploy:handler:base": "hardhat run --network base scripts/deployHandler.ts",
     
     "test:deployment": "hardhat run scripts/test-deployment.ts",
     "test:deployment:sepolia": "hardhat run --network sepolia scripts/test-deployment.ts",
