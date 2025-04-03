@@ -1,4 +1,5 @@
 import { ethers } from "hardhat";
+import { artifact1 } from "./exhibitDetails";
 
 async function main() {
   // Retrieve signers
@@ -20,19 +21,10 @@ async function main() {
   await transferTx.wait(2);
   console.log("Museum ownership transferred to EventOrganizerService");
 
-
-  // Deploy ArtifactNFT
-  const artifact1 = {
-    name: "Exhibit v2",
-    symbol: "TS1",
-    owner: owner.address,
-    baseURI: "https://s3.tebi.io/summitshare-uris/",
-  }
-
   const tx0 = await organizerService.connect(owner).deployArtifactNFT(
     artifact1.name,
     artifact1.symbol,
-    artifact1.owner,
+    owner.address,
     artifact1.baseURI
   );
 

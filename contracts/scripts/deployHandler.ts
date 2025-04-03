@@ -1,73 +1,78 @@
 import { ethers, network } from "hardhat";
-import { getRevenueConfig } from "./configure";
+import { getRevenueConfig } from "./exhibitDetails";
 
-// Function to deploy PaymentHandler to a specific network
-async function deployToNetwork(networkName: string) {
-  console.log(`Deploying PaymentHandler to ${networkName}...`);
-
-  // Get the signers
-  const [deployer] = await ethers.getSigners();
-  console.log(`Deploying with account: ${deployer.address}`);
-
-  // Get the revenue configuration from configure.ts
-  const revenueConfig = getRevenueConfig();
-  console.log(`Beneficiaries: ${revenueConfig.beneficiaries.join(", ")}`);
-  console.log(`Shares: ${revenueConfig.shares.join(", ")}`);
-
-  // Deploy the PaymentHandler contract
-  console.log("Deploying PaymentHandler...");
-  const PaymentHandler = await ethers.getContractFactory("PaymentHandler");
-  const paymentHandler = await PaymentHandler.deploy(
-    revenueConfig.beneficiaries,
-    revenueConfig.shares
-  );
-
-  await paymentHandler.waitForDeployment();
-  const paymentHandlerAddress = await paymentHandler.getAddress();
-  
-  console.log(`PaymentHandler deployed to: ${paymentHandlerAddress} on ${networkName}`);
-  console.log(`To verify on ${networkName}:`);
-  console.log(`npx hardhat verify --network ${networkName} ${paymentHandlerAddress} "${revenueConfig.beneficiaries.join('","')}" ${revenueConfig.shares.join(',')}`);
-
-  return { paymentHandlerAddress, networkName };
-}
-
-// Main function that handles deployment to one or more networks
 async function main() {
-  // Get networks from command line arguments
-  const args = process.argv.slice(2);
-  let networks: string[] = [];
-  
-  // If networks are specified as arguments, use those
-  if (args.length > 0) {
-    networks = args;
-  } else {
-    // Otherwise use the current hardhat network
-    networks = [network.name];
-  }
-  
-  console.log(`Deploying PaymentHandler to the following networks: ${networks.join(", ")}`);
-  
-  // Deploy to each network
-  const results = [];
-  for (const networkName of networks) {
-    try {
-      // Need to use hardhat.run to switch networks programmatically
-      // This is a simplified example - in practice, you'd need to use the Hardhat Runtime Environment
-      const result = await deployToNetwork(networkName);
-      results.push(result);
-    } catch (error) {
-      console.error(`Error deploying to ${networkName}:`, error);
+  try {
+    const networkName = network.name;
+    console.log(`\nDeploying PaymentHandler to ${networkName}...\n`);
+
+    // Get the signer
+    const [ owner ] = await ethers.getSigners();
+    console.log(`Deploying with account: ${owner.address}`);
+
+    // Log balance
+    const balance = await owner.provider.getBalance(owner.address);
+    console.log(`Account balance: ${ethers.formatEther(balance)} ETH\n`);
+
+    // Get deployment parameters
+    const revenueConfig = getRevenueConfig();
+    console.log("Deployment Parameters:");
+    console.log(`Beneficiaries: ${revenueConfig.beneficiaries.join(", ")}`);
+    console.log(`Shares: ${revenueConfig.shares.join(", ")}\n`);
+
+    // Validate parameters
+    if (revenueConfig.beneficiaries.length === 0) {
+      throw new Error("No beneficiaries provided");
     }
-  }
+    if (revenueConfig.beneficiaries.length !== revenueConfig.shares.length) {
+      throw new Error("Beneficiaries and shares length mismatch");
+    }
+
+    // Get current nonce
+    const nonce = await owner.provider.getTransactionCount(owner.address);
+    console.log(`Current nonce: ${nonce}`);
+
+    // Get contract factory
+    const PaymentHandler = await ethers.getContractFactory("PaymentHandler");
+        // Deploy contract
+        console.log("\nDeploying contract...");
+    const paymentHandler = await PaymentHandler.deploy(revenueConfig.beneficiaries, revenueConfig.shares)
+
+    // Wait for deployment
+    console.log("Waiting for deployment confirmation...");
+    const deployTx = paymentHandler.deploymentTransaction();
+    if (!deployTx) throw new Error("Failed to get deployment transaction");
+    
+    console.log(`Transaction hash: ${deployTx.hash}`);
+    
+    await paymentHandler.waitForDeployment();
+    const paymentHandlerAddress = await paymentHandler.getAddress();
+    
+    console.log("\nDeployment successful!");
+    console.log(`Contract address: ${paymentHandlerAddress}`);
   
-  // Print summary
-  console.log("\nDeployment Summary:");
-  for (const result of results) {
-    console.log(`${result.networkName}: ${result.paymentHandlerAddress}`);
+        // Print verification command
+        console.log("\nTo verify on block explorer:");
+        console.log(`npx hardhat verify --network ${networkName} ${paymentHandlerAddress} "${revenueConfig.beneficiaries.join('","')}" ${revenueConfig.shares.join(',')}`);
+
+  } catch (error: any) {
+    console.error("\nDeployment failed:");
+    console.error(error.message);
+    if (error.transaction) {
+      console.error("\nTransaction details:", {
+        hash: error.transaction.hash,
+        from: error.transaction.from,
+        nonce: error.transaction.nonce,
+        gasLimit: error.transaction.gasLimit?.toString(),
+        maxFeePerGas: error.transaction.maxFeePerGas?.toString(),
+        maxPriorityFeePerGas: error.transaction.maxPriorityFeePerGas?.toString()
+      });
+    }
+    process.exit(1);
   }
 }
 
+// Execute if running directly
 if (require.main === module) {
   main()
     .then(() => process.exit(0))
