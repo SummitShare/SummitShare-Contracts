@@ -41,14 +41,12 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 11155420, // OP Sepolia chain ID
       gasPrice: "auto",
-      timeout: 200000
     },
     baseSepolia: {
       url: BASE_RPC_URL || "https://sepolia.base.org",
       accounts,
       chainId: 84532, // Base Sepolia chain ID
       gasPrice: "auto",
-      timeout: 200000
     },
     // Production networks
     mainnet: {

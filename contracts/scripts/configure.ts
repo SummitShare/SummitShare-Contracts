@@ -84,26 +84,10 @@ async function main() {
     // Get the ticketing contract address
     const ticketingContract = await paymentHandler.ticketingContract();
     console.log("Ticketing contract:", ticketingContract);
-    
-    // // Example: Disable ticketing
-    // console.log("Disabling ticketing...");
-    // const tx5 = await paymentHandler.setTicketingEnabled(false, ethers.ZeroAddress);
-    // const receipt5 = await tx5.wait(6);
-    // console.log("Disabled ticketing:", receipt5.status);
-    
-    // // Verify ticketing is disabled
-    // const ticketingEnabledAfter = await paymentHandler.onChainTicketingEnabled();
-    // console.log("Ticketing enabled after update:", ticketingEnabledAfter);
-    
-    // // Example: Re-enable ticketing
-    // console.log("Re-enabling ticketing...");
-    // const tx6 = await paymentHandler.setTicketingEnabled(true, exhibitNFTAddress);
-    // const receipt6 = await tx6.wait(6);
-    // console.log("Re-enabled ticketing:", receipt6.status);
-    
-    // // Verify ticketing is enabled again
-    // const ticketingEnabledFinal = await paymentHandler.onChainTicketingEnabled();
-    // console.log("Ticketing enabled final state:", ticketingEnabledFinal);
+
+    // Verify ticketing is enabled 
+     const ticketingEnabledFinal = await paymentHandler.onChainTicketingEnabled();
+     console.log("Ticketing enabled final state:", ticketingEnabledFinal);
 }
 
 main()
