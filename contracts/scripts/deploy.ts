@@ -1,73 +1,44 @@
-// Import ethers from Hardhat, not necessary to import it separately
-const { ethers } = require("hardhat");
+import { ethers } from "hardhat";
+import { artifact1 } from "./exhibitDetails";
 
 async function main() {
   // Retrieve signers
-  const [controller, owner, beneficiary1, beneficiary2, funder] = await ethers.getSigners();
-
-  const MockUSDC = await ethers.getContractFactory("MUSDC");
-  const usdcToken = await MockUSDC.connect(owner).deploy(ethers.parseUnits("20000000", 18));
-  await usdcToken.deploymentTransaction().wait(1);
-
-  //distribute some USDC to the funders
-  const tx1 = await usdcToken.connect(owner).transfer(funder.address, ethers.parseUnits("2000000", 18));
-  await tx1.wait();
+  const [ owner ] = await ethers.getSigners();
 
   // Deploying Museum contract
   const Museum = await ethers.getContractFactory("Museum");
-  const museum = await Museum.connect(owner).deploy(usdcToken.target);
-  await museum.deploymentTransaction().wait(1);
+  const museum = await Museum.connect(owner).deploy();
+  await museum.deploymentTransaction().wait(2);
 
-  // Deploy EventOrganizerService with the deployed Museum and USDC token addresses
+  // Deploy EventOrganizerService with the deployed Museum
   const EventOrganizerService = await ethers.getContractFactory("EventOrganizerService");
-  const organizerService = await EventOrganizerService.deploy(museum.target, usdcToken.target);
-  await organizerService.deploymentTransaction().wait(1);
+  const organizerService = await EventOrganizerService.deploy(museum.target);
+  await organizerService.deploymentTransaction().wait(2);
 
-
-  // Deploy ArtifactNFT
-  const artifact1 = {
-    name: "",
-    symbol: "",
-    owner: owner.address,
-    baseURI: "",
-  }
-  const artifact2 = {
-    name: "",
-    symbol: "",
-    owner: owner.address,
-    baseURI: "",
-  }
+  // Transfer ownership of Museum to EventOrganizerService
+  console.log("Transferring Museum ownership to EventOrganizerService...");
+  const transferTx = await museum.transferOwnership(organizerService.target);
+  await transferTx.wait(2);
+  console.log("Museum ownership transferred to EventOrganizerService");
 
   const tx0 = await organizerService.connect(owner).deployArtifactNFT(
     artifact1.name,
     artifact1.symbol,
-    artifact1.owner,
+    owner.address,
     artifact1.baseURI
   );
+
   const receipt0 = await tx0.wait(6);
   console.log("Deployed ArtifactNFT 1", receipt0.status)
 
   console.log("Events from ArtifactNFT 1 deployment:");
   receipt0.logs.forEach((log, index) => {
-    console.log(`Event ${index}:`, log.eventName, log.args);
-  });
-
-  const tx00 = await organizerService.connect(owner).deployArtifactNFT(
-    artifact2.name,
-    artifact2.symbol,
-    artifact2.owner,
-    artifact2.baseURI
-  );
-  const receipt00 = await tx00.wait(6);
-  console.log("Deployed ArtifactNFT 2", receipt00.status)
-
-  console.log("\nEvents from ArtifactNFT 2 deployment:");
-  receipt00.logs.forEach((log, index) => {
-    console.log(`Event ${index}:`, log.eventName, log.args);
+    if ('args' in log) {
+      console.log(`Event ${index}:`, log.eventName, log.args);
+    }
   });
 
   // log addresses
-  console.log("MUSDC deployed to:", usdcToken.target);
   console.log("Museum deployed to:", museum.target);
   console.log("EventOrganizerService deployed to:", organizerService.target);
 }

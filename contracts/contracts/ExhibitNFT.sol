@@ -5,78 +5,88 @@ pragma solidity ^0.8.0;
    Purpose: Manages Non-Fungible Tokens (NFTs) representing individual exhibits, ensuring ownership and access rights for event participants. */
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "./EventEscrow.sol";
+import "./PaymentHandler.sol";
+import "./ExhibitStructs.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ExhibitNFT is ERC721, Ownable {
-    uint256 public ticketPrice;
-    EventEscrow public escrow;
+contract ExhibitNFT is ERC721, Ownable, ITicketing {
+    uint256 public immutable ticketPrice;
+    address public immutable paymentHandler;
     uint256 private totalMinted;
     string public baseURI;
-
     string public location;
-    address public artifactNFTAddress;
+    address public immutable artifactNFTAddress;
     string public details;
 
     event TicketMinted(address exhibit, address to, uint256 tokenId);
-    // Define the event
+
     event ExhibitCreated(
         string name,
         string symbol,
         uint256 ticketPrice,
-        EventEscrow escrow,
+        address paymentHandler,
         address owner,
-        string baseURI,
-        string location,
-        address artifactNFTAddress,
-        string details
+        address artifactNFTAddress
     );
 
     constructor(
-        string memory name,
-        string memory symbol,
-        uint256 _ticketPrice,
-        EventEscrow _escrow,
-        address _owner,
-        string memory _baseURI,
-        string memory _location,
-        address _artifactNFTAddress,
-        string memory _details
-    ) ERC721(name, symbol) Ownable(_owner) {
-        ticketPrice = _ticketPrice;
-        escrow = _escrow;
-        baseURI = _baseURI;
-        totalMinted = 0;
+    ExhibitInfo memory info,
+    address _paymentHandler,
+    address _owner,
+    string memory _location,
+    string memory _details
+) ERC721(info.name, info.symbol) Ownable(_owner) {
+    require(_paymentHandler != address(0), "Invalid payment handler");
+    
+    ticketPrice = info.ticketPrice;
+    paymentHandler = _paymentHandler;
+    baseURI = info.baseURI;
+    totalMinted = 0;
+    artifactNFTAddress = info.artifactNFTAddress;
+    location = _location;
+    details = _details;
 
-        location = _location;
-        artifactNFTAddress = _artifactNFTAddress;
-        details = _details;
+    emit ExhibitCreated(
+        info.name,
+        info.symbol,
+        info.ticketPrice, 
+        _paymentHandler,
+        _owner,
+        info.artifactNFTAddress
+    );
+}
 
-        // Emit the event
-        emit ExhibitCreated(
-            name,
-            symbol,
-            _ticketPrice,
-            _escrow,
-            _owner,
-            _baseURI,
-            _location,
-            _artifactNFTAddress,
-            _details
-        );
-    }
 
-    function mintTicket(address to) external onlyOwner returns (uint256) {
-        uint256 tokenId = totalMinted++;
+    /**
+     * @dev Mint a new ticket NFT.
+     * @param to Address to mint the ticket to.
+     * @return tokenId The ID of the minted token.
+     */
+    function mintTicket(address to) external override returns (uint256) {
+        if (msg.sender != paymentHandler && msg.sender != owner()) {
+            revert("Not authorized");
+        }
+        
+        uint256 tokenId = totalMinted;
         _mint(to, tokenId);
+        totalMinted++;
+        
         emit TicketMinted(address(this), to, tokenId);
         return tokenId;
     }
 
+    /**
+     * @dev Returns the base URI for token metadata.
+     * @return The base URI string.
+     */
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
     }
 
+    /**
+     * @dev Set a new base URI for token metadata.
+     * @param newBaseURI The new base URI to set.
+     */
     function setBaseURI(string memory newBaseURI) external onlyOwner {
         baseURI = newBaseURI;
     }

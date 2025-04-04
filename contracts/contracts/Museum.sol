@@ -1,78 +1,54 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-/* Category: Smart Contract
-   Purpose: Acts as the central hub for curating exhibits and managing event logistics, including ticket sales and participant access. */
-
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./ExhibitNFT.sol";
 
+/**
+ * @title Museum
+ * @dev Central hub for curating exhibits and managing ticket verification.
+ */
 contract Museum is Ownable {
-    IERC20 public usdcToken;
+    // Mapping from exhibit ID to its ExhibitNFT contract.
     mapping(string => ExhibitNFT) public exhibits;
 
+    // Optimized events with minimal parameters
     event ExhibitCurated(
-        address museumAddress,
         string exhibitId,
         address exhibitAddress
     );
-    event TicketPurchased(address buyer, address exhibit, uint256 tokenId);
-    // emmit an event with the contract address, token address, and owner address
-    event MuseumCreated(
-        address museumAddress,
-        address tokenAddress,
-        address ownerAddress
-    );
 
-    constructor(IERC20 _usdcToken) Ownable(msg.sender) {
-        usdcToken = _usdcToken;
-        // emmit an event with the contract address, token address, and owner address
-        emit MuseumCreated(address(this), address(usdcToken), owner());
-    }
+    event MuseumCreated(address museumAddress);
 
     /**
-     * @dev Curates a new exhibit.
-     * @param exhibitId The unique identifier for the exhibit.
+     * @dev Initializes the Museum contract.
+     */
+    constructor() Ownable(msg.sender) {
+        emit MuseumCreated(address(this));
+    }
+ 
+    /**
+     * @dev Register (curate) a new exhibit.
+     * @param exhibitId Unique identifier for the exhibit.
      * @param exhibit The ExhibitNFT contract for the exhibit.
      */
-    function curateExhibit(
-        string memory exhibitId,
-        ExhibitNFT exhibit
-    ) external onlyOwner {
+    function curateExhibit(string memory exhibitId, ExhibitNFT exhibit) external onlyOwner {
         exhibits[exhibitId] = exhibit;
-
-        emit ExhibitCurated(address(this), exhibitId, address(exhibit));
+        emit ExhibitCurated(exhibitId, address(exhibit));
     }
-
+ 
     /**
-     * @dev Purchases a ticket for an exhibit.
-     * @param exhibitId The unique identifier for the exhibit.
-     * @param usdcAmount The amount of USDC sent to purchase the ticket.
+     * @dev Verify ticket ownership for an exhibit.
+     * @param exhibitId Unique identifier for the exhibit.
+     * @param user Address of the user.
+     * @return True if the user owns a ticket, false otherwise.
      */
-    function purchaseTicket(
-        string memory exhibitId,
-        uint256 usdcAmount
-    ) external {
+    function verifyTicketOwnership(string memory exhibitId, address user) external view returns (bool) {
         ExhibitNFT exhibit = exhibits[exhibitId];
-        require(address(exhibit) != address(0), "Exhibit does not exist.");
-
-        uint256 ticketPrice = exhibit.ticketPrice();
-
-        // Transfer the USDC directly from the buyer to the ExhibitNFT's escrow
-        address escrowAddress = address(exhibit.escrow());
-        require(usdcToken.transferFrom(msg.sender, escrowAddress, ticketPrice), "Transfer Failed");
-        
-        // Mint the ticket to the buyer
-        uint256 tokenId = exhibit.mintTicket(msg.sender);
-
-        emit TicketPurchased(msg.sender, address(exhibit), tokenId);
-    }
-
-    function verifyTicketOwnership(
-        string memory exhibitId,
-        address user
-    ) external view returns (bool) {
-        ExhibitNFT exhibit = exhibits[exhibitId];
+        // Check if the exhibit exists before checking balance
+        if (address(exhibit) == address(0)) {
+            return false;
+        }
         return exhibit.balanceOf(user) > 0;
     }
 }

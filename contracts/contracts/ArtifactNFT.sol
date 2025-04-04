@@ -16,16 +16,17 @@ contract ArtifactNFT is ERC721A, Ownable {
         string memory _name,
         string memory _symbol,
         address _owner,
-        string memory _baseURI
+        string memory baseURI_
     ) ERC721A(_name, _symbol) Ownable(_owner) {
-        baseURI = _baseURI;
+        baseURI = baseURI_;
     }
 
     function mint(address to, uint256 quantity) external onlyOwner returns (uint256) {
+        uint256 startTokenId = _nextTokenId();
         _mint(to, quantity);
         emit Minted(to, quantity);
+        return startTokenId;
     }
-
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI;

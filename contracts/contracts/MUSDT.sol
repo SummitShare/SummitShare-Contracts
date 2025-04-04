@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // Uncomment this line to use ////console.log
 // import "hardhat/console.sol";
 
-contract MUSDC is ERC20 {
-    constructor(uint256 _initialSupply) ERC20("USDC Mock", "USDCM") {
+contract USDT is ERC20 {
+    constructor(uint256 _initialSupply) ERC20("USDT", "USDT") {
         _mint(msg.sender, _initialSupply);
     }
 }

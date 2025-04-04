@@ -22,22 +22,22 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>12/12</span>
-      </div>
-      <div class='fl pad1y space-right2'>
-        <span class="strong">62.5% </span>
-        <span class="quiet">Branches</span>
-        <span class='fraction'>5/8</span>
+        <span class='fraction'>6/6</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
-        <span class="quiet">Functions</span>
+        <span class="quiet">Branches</span>
         <span class='fraction'>4/4</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>3/3</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>14/14</span>
+        <span class='fraction'>7/7</span>
       </div>
     </div>
   </div>
@@ -97,28 +97,7 @@
 52
 53
 54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+55</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -142,11 +121,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -155,10 +132,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">8×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -168,28 +143,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -199,72 +157,51 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./ExhibitNFT.sol";
 &nbsp;
+/**
+ * @title Museum
+ * @dev Central hub for curating exhibits and managing ticket verification.
+ */
 contract Museum is Ownable {
-    IERC20 public usdcToken;
+    // Mapping from exhibit ID to its ExhibitNFT contract.
     mapping(string =&gt; ExhibitNFT) public exhibits;
 &nbsp;
+    // Optimized events with minimal parameters
     event ExhibitCurated(
-        address museumAddress,
         string exhibitId,
         address exhibitAddress
     );
-    event TicketPurchased(address buyer, address exhibit, uint256 tokenId);
-    // emmit an event with the contract address, token address, and owner address
-    event MuseumCreated(
-        address museumAddress,
-        address tokenAddress,
-        address ownerAddress
-    );
 &nbsp;
-    constructor(IERC20 _usdcToken) Ownable(msg.sender) {
-        usdcToken = _usdcToken;
-        // emmit an event with the contract address, token address, and owner address
-        emit MuseumCreated(address(this), address(usdcToken), owner());
-    }
+    event MuseumCreated(address museumAddress);
 &nbsp;
     /**
-     * @dev Curates a new exhibit.
-     * @param exhibitId The unique identifier for the exhibit.
+     * @dev Initializes the Museum contract.
+     */
+    constructor() Ownable(msg.sender) {
+        emit MuseumCreated(address(this));
+    }
+ 
+    /**
+     * @dev Register (curate) a new exhibit.
+     * @param exhibitId Unique identifier for the exhibit.
      * @param exhibit The ExhibitNFT contract for the exhibit.
      */
-    function curateExhibit(
-        string memory exhibitId,
-        ExhibitNFT exhibit
-    ) external onlyOwner {
+    function curateExhibit(string memory exhibitId, ExhibitNFT exhibit) external onlyOwner {
         exhibits[exhibitId] = exhibit;
-&nbsp;
-        emit ExhibitCurated(address(this), exhibitId, address(exhibit));
+        emit ExhibitCurated(exhibitId, address(exhibit));
     }
-&nbsp;
+ 
     /**
-     * @dev Purchases a ticket for an exhibit.
-     * @param exhibitId The unique identifier for the exhibit.
-     * @param usdcAmount The amount of USDC sent to purchase the ticket.
+     * @dev Verify ticket ownership for an exhibit.
+     * @param exhibitId Unique identifier for the exhibit.
+     * @param user Address of the user.
+     * @return True if the user owns a ticket, false otherwise.
      */
-    function purchaseTicket(
-        string memory exhibitId,
-        uint256 usdcAmount
-    ) external {
+    function verifyTicketOwnership(string memory exhibitId, address user) external view returns (bool) {
         ExhibitNFT exhibit = exhibits[exhibitId];
-        <span class="missing-if-branch" title="else path not taken" >E</span>require(address(exhibit) != address(0), "Exhibit does not exist.");
-&nbsp;
-        uint256 ticketPrice = exhibit.ticketPrice();
-        <span class="missing-if-branch" title="else path not taken" >E</span>require(usdcAmount &gt;= ticketPrice, "Insufficient USDC sent.");
-&nbsp;
-        // Transfer the USDC directly from the buyer to the ExhibitNFT's escrow
-        address escrowAddress = address(exhibit.escrow());
-        <span class="missing-if-branch" title="else path not taken" >E</span>require(usdcToken.transferFrom(msg.sender, escrowAddress, ticketPrice));
-        // Mint the ticket to the buyer
-        uint256 tokenId = exhibit.mintTicket(msg.sender);
-&nbsp;
-        emit TicketPurchased(msg.sender, address(exhibit), tokenId);
-    }
-&nbsp;
-    function verifyTicketOwnership(
-        string memory exhibitId,
-        address user
-    ) external view returns (bool) {
-        ExhibitNFT exhibit = exhibits[exhibitId];
+        // Check if the exhibit exists before checking balance
+        if (address(exhibit) == address(0)) {
+            return false;
+        }
         return exhibit.balanceOf(user) &gt; 0;
     }
 }
@@ -274,7 +211,7 @@ contract Museum is Ownable {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Mar 08 2024 16:06:13 GMT+0300 (East Africa Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Mar 14 2025 16:49:05 GMT+0200 (Central Africa Time)
 </div>
 </div>
 <script src="../prettify.js"></script>
